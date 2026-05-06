@@ -32,7 +32,7 @@ const CONFIG = {
 
   // ─────────────────────────────────────────────
   // 📊 DASHBOARD TITLE & SUBTITLE
-  DASHBOARD_TITLE:    "🏗️ Prime Land — Competitor Analysis",
+  DASHBOARD_TITLE:    "Competitor Analysis",
   DASHBOARD_SUBTITLE: "Sri Lanka Land Market Intelligence Dashboard",
 
   // ─────────────────────────────────────────────
