@@ -33,17 +33,17 @@ const CONFIG = {
   // ─────────────────────────────────────────────
   // 📊 DASHBOARD TITLE & SUBTITLE
   DASHBOARD_TITLE:    "Competitor Analysis",
-  DASHBOARD_SUBTITLE: "Sri Lanka Land Market Intelligence Dashboard",
+  DASHBOARD_SUBTITLE: "Sri Lanka Land Market Dashboard",
 
   // ─────────────────────────────────────────────
   // 📅 DATE LABEL shown in the top-right corner
-  DATA_DATE: "📅 Data: 2026",
+  DATA_DATE: "📅 Data: 2026 April ",
 
   // ─────────────────────────────────────────────
   // 🔄 AUTO REFRESH
   //    How often (minutes) to re-fetch Google Sheets data
   //    Set to 0 to turn off auto-refresh
-  AUTO_REFRESH_MINUTES: 10,
+  AUTO_REFRESH_MINUTES: 1,
 
   // ─────────────────────────────────────────────
   // 📊 CHART SIZE — how many companies / locations to show
