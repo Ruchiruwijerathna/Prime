@@ -22,7 +22,7 @@ const CONFIG = {
   // 🔗 GOOGLE SHEETS CSV URL
   //    Paste your published CSV link here (between the quotes)
   //    Leave empty ("") to use the embedded offline data instead
-  GOOGLE_SHEET_CSV_URL: "",
+  GOOGLE_SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTG_z9yrnCzjeMgqlZBt7BNaGRPXf5MxnaE5_SL_HYk9wz6lGU3Fs3tJWK3vTUlWMLTyZK2U228OuI/pub?gid=2019630569&single=true&output=csv",
 
   // ─────────────────────────────────────────────
   // 🏢 YOUR COMPANY
