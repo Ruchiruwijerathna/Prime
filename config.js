@@ -22,7 +22,7 @@ const CONFIG = {
   // 🔗 GOOGLE SHEETS CSV URL
   //    Paste your published CSV link here (between the quotes)
   //    Leave empty ("") to use the embedded offline data instead
-  GOOGLE_SHEET_CSV_URL: "",
+  GOOGLE_SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTG_z9yrnCzjeMgqlZBt7BNaGRPXf5MxnaE5_SL_HYk9wz6lGU3Fs3tJWK3vTUlWMLTyZK2U228OuI/pub?gid=2019630569&single=true&output=csv",
 
   // ─────────────────────────────────────────────
   // 🏢 YOUR COMPANY
@@ -32,22 +32,22 @@ const CONFIG = {
 
   // ─────────────────────────────────────────────
   // 📊 DASHBOARD TITLE & SUBTITLE
-  DASHBOARD_TITLE:    "🏗️ Prime Land — Competitor Analysis",
-  DASHBOARD_SUBTITLE: "Sri Lanka Land Market Intelligence Dashboard",
+  DASHBOARD_TITLE:    "Land — Competitor Analysis",
+  DASHBOARD_SUBTITLE: "Land Market  Dashboard",
 
   // ─────────────────────────────────────────────
   // 📅 DATE LABEL shown in the top-right corner
-  DATA_DATE: "📅 Data: 2026",
+  DATA_DATE: "📅 Data: 2026 April",
 
   // ─────────────────────────────────────────────
   // 🔄 AUTO REFRESH
   //    How often (minutes) to re-fetch Google Sheets data
   //    Set to 0 to turn off auto-refresh
-  AUTO_REFRESH_MINUTES: 10,
+  AUTO_REFRESH_MINUTES: 1,
 
   // ─────────────────────────────────────────────
   // 📊 CHART SIZE — how many companies / locations to show
-  TOP_COMPANIES_COUNT: 12,   // number of companies in bar charts
+  TOP_COMPANIES_COUNT: 15,   // number of companies in bar charts
   TOP_LOCATIONS_COUNT: 15,   // number of locations in location chart
 
   // ─────────────────────────────────────────────
