@@ -33,7 +33,7 @@ const CONFIG = {
 
   // Paste your published Google Sheets CSV URL here
   // Leave "" to use the offline data.json file instead
-  GOOGLE_SHEET_CSV_URL: "",
+  GOOGLE_SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTG_z9yrnCzjeMgqlZBt7BNaGRPXf5MxnaE5_SL_HYk9wz6lGU3Fs3tJWK3vTUlWMLTyZK2U228OuI/pub?gid=2019630569&single=true&output=csv",
 
 
   /* ════════════════════════════════════════════════════════
@@ -51,7 +51,7 @@ const CONFIG = {
      📊  DASHBOARD TITLES  (shown in the header)
   ════════════════════════════════════════════════════════ */
 
-  DASHBOARD_TITLE:    "🏗️ Sri Lanka Land Market — Competitor Analysis",
+  DASHBOARD_TITLE:    "Land Market — Competitor Analysis",
   DASHBOARD_SUBTITLE: "Real Estate Intelligence Dashboard · 2026",
   DATA_DATE:          "📅 Updated: 2026",
 
@@ -62,14 +62,14 @@ const CONFIG = {
      Set to 0 to disable.
   ════════════════════════════════════════════════════════ */
 
-  AUTO_REFRESH_MINUTES: 10,
+  AUTO_REFRESH_MINUTES: 1,
 
 
   /* ════════════════════════════════════════════════════════
      📊  CHART SIZES
   ════════════════════════════════════════════════════════ */
 
-  TOP_COMPANIES_COUNT:       12,   // companies shown in bar charts
+  TOP_COMPANIES_COUNT:       15,   // companies shown in bar charts
   TOP_LOCATIONS_COUNT:       15,   // locations in Top Locations chart
   TOP_PRICE_LOCATIONS_COUNT: 12,   // locations in Avg Price chart
   CURRENT_YEAR:              2026, // used to calculate years in business
