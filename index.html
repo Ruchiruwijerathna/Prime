@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sri Lanka Land Market — Competitor Analysis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+     LOADING OVERLAY
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">LOADING DASHBOARD...</div>
+</div>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+     HEADER
+     Title/subtitle → config.js DASHBOARD_TITLE / DASHBOARD_SUBTITLE
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<header class="header">
+  <div>
+    <h1 id="hTitle">Loading...</h1>
+    <div class="sub" id="hSub"></div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="val" id="hCompanies">—</div><div class="lbl">Companies</div></div>
+    <div class="hstat"><div class="val" id="hProjects">—</div><div class="lbl">Projects</div></div>
+    <div class="hstat"><div class="val" id="hAvailable">—</div><div class="lbl">Available</div></div>
+    <div class="date-badge" id="hDate">📅 ...</div>
+  </div>
+</header>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+     STATUS BAR + REFRESH BUTTON
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<div class="status-bar">
+  <span class="status-dot"></span>
+  <span id="dataSource" class="source-label">Initialising...</span>
+  <button class="refresh-btn" onclick="loadAndRender()">⟳ Refresh Data</button>
+</div>
+
+<div class="grid">
+
+  <!-- ═══════════════════════════════════════
+       KPI CARDS  (6 summary boxes)
+       Labels editable here directly.
+       Values come from the data automatically.
+  ═══════════════════════════════════════ -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-lbl">Companies Tracked</div>
+      <div class="kpi-val" id="kpi1">—</div>
+      <div class="kpi-sub" id="kpi1s"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Total Projects</div>
+      <div class="kpi-val" id="kpi2">—</div>
+      <div class="kpi-sub" id="kpi2s"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Available Now</div>
+      <div class="kpi-val" id="kpi3">—</div>
+      <div class="kpi-sub" id="kpi3s"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Sold Out</div>
+      <div class="kpi-val" id="kpi4">—</div>
+      <div class="kpi-sub" id="kpi4s"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Avg Price / Perch</div>
+      <div class="kpi-val" id="kpi5">—</div>
+      <div class="kpi-sub" id="kpi5s"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Unique Locations</div>
+      <div class="kpi-val" id="kpi6">—</div>
+      <div class="kpi-sub" id="kpi6s"></div>
+    </div>
+  </div>
+
+  <div class="section-label">📊 Company Intelligence</div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 1 — BUBBLE: Company Market Presence
+       X = Years in business
+       Y = Project count
+       Bubble size = Total blocks (proportional)
+  ═══════════════════════════════════════ -->
+  <div class="card span-8">
+    <div class="card-title"><span>🫧</span> Company Market Presence</div>
+    <div class="card-sub">Years in market vs. project count — bubble size = total land blocks</div>
+    <div class="ch ch-480"><canvas id="bubbleChart"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 2 — TIMELINE: Years in Business
+  ═══════════════════════════════════════ -->
+  <div class="card span-4">
+    <div class="card-title"><span>⏳</span> Company Establishment Timeline</div>
+    <div class="card-sub">Years each company has been operating</div>
+    <div class="ch ch-480"><canvas id="ageChart"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 3 — BAR: Projects by Company
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>🏢</span> Projects by Company</div>
+    <div class="card-sub">Total project count per company</div>
+    <div class="ch ch-480"><canvas id="companyBar"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 4 — STACKED BAR: Status by Company
+       Colours: Available=green, Sold Out=red,
+       Trending=orange, Featured=purple, etc.
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>📋</span> Project Status Breakdown by Company</div>
+    <div class="card-sub">Available / Sold Out / Trending / Other per company</div>
+    <div class="status-legend" id="statusLegend"></div>
+    <div class="ch ch-400"><canvas id="stackedBar"></canvas></div>
+  </div>
+
+  <div class="section-label">📍 Location &amp; Pricing Intelligence</div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 5 — BAR: Top Locations
+       Count = TOP_LOCATIONS_COUNT in config.js
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>📍</span> Top Locations by Project Count</div>
+    <div class="card-sub">Most active areas across all companies</div>
+    <div class="ch ch-480"><canvas id="locationBar"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 6 — BAR: Avg Price by Location
+       Only locations with 2+ price data points.
+       Price range filter in config.js
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>💰</span> Average Price / Perch by Location</div>
+    <div class="card-sub">Locations with sufficient pricing data (LKR per perch)</div>
+    <div class="ch ch-480"><canvas id="locationPriceBar"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 7 — GROUPED BAR: Price by Region
+       Regions defined in config.js → URBAN_AREAS / SUBURBAN_AREAS
+       Shows Average + Max per region
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>📊</span> Price Distribution by Region Type</div>
+    <div class="card-sub">Urban / Suburban / Rural — average &amp; max price per perch (LKR)</div>
+    <div class="ch ch-300"><canvas id="priceRegionBar"></canvas></div>
+    <div class="insight">
+      <h4>💡 Region Insight</h4>
+      <p id="priceInsight">Calculating...</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 8 — COMBO: Plot Size Distribution
+       Bar = project count per size bucket
+       Line = average price per size bucket
+       Buckets defined in config.js → PLOT_BUCKETS
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>📐</span> Plot Size Analysis (Perches)</div>
+    <div class="card-sub">Project count (bars) + avg price (line) per plot size — find the best opportunity</div>
+    <div class="ch ch-300"><canvas id="plotSizeBar"></canvas></div>
+    <div class="insight">
+      <h4>💡 Plot Size Insight</h4>
+      <p id="plotInsight">Calculating...</p>
+    </div>
+  </div>
+
+  <div class="section-label">🏆 Project Data Tables</div>
+
+  <!-- ═══════════════════════════════════════
+       TABLE 1 — Largest Projects (by blocks)
+       Top 12, sorted by Total Blocks column
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>🏆</span> Largest Projects by Total Blocks</div>
+    <div class="card-sub">Top 12 projects ranked by number of blocks</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th><th>Location</th><th>Blocks</th>
+            <th>Price/Perch</th><th>Status</th><th>Available</th>
+          </tr>
+        </thead>
+        <tbody id="topProjectsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       TABLE 2 — Available Investment Opportunities
+       Status=Available + av>0, sorted by available count
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>🎯</span> Available Projects — Investment Opportunities</div>
+    <div class="card-sub">Currently available projects sorted by number of available plots</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th><th>Location</th><th>Price/Perch</th>
+            <th>Available</th><th>Plot Size</th><th>Total Blocks</th>
+          </tr>
+        </thead>
+        <tbody id="availBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       EXECUTIVE SUMMARY — 6 INSIGHT BOXES
+       ──────────────────────────────────────
+       ✏️ TO EDIT THESE TEXT BOXES:
+       Open  config.js  on GitHub
+       Find  INSIGHTS: [  ...  ]
+       Edit the "title" and "text" for each box
+       Save → dashboard updates in 60 seconds
+  ═══════════════════════════════════════ -->
+  <div class="card span-12">
+    <div class="card-title"><span>📝</span> Executive Summary &amp; Strategic Insights
+      <span style="font-size:0.7em;color:var(--text-secondary);font-weight:400;letter-spacing:0;text-transform:none;margin-left:8px">
+        (edit text in config.js → INSIGHTS array)
+      </span>
+    </div>
+    <div class="summary-grid" id="insightGrid">
+      <!-- Populated from CONFIG.INSIGHTS in config.js -->
+    </div>
+  </div>
+
+</div><!-- /grid -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   COLOUR PALETTE
+   These match the CSS variables in style.css
+═══════════════════════════════════════════════════════════ */
+const C = {
+  gold:'#d4a574', goldLight:'#e8c9a0',
+  blue:'#4a90d9', green:'#2ecc71', red:'#e74c3c',
+  purple:'#9b59b6', cyan:'#00bcd4', orange:'#f39c12',
+  text:'#a0a0b0', border:'rgba(42,42,74,0.5)'
+};
+const MULTI = [
+  C.blue,C.green,C.purple,C.cyan,C.orange,C.red,
+  '#52be80','#3498db','#8e44ad','#1abc9c','#e67e22','#c0392b',
+  '#27ae60','#2980b9','#d35400','#16a085'
+];
+
+Chart.defaults.color       = C.text;
+Chart.defaults.borderColor = C.border;
+Chart.defaults.font.family = "'Nunito', sans-serif";
+
+
+/* ═══════════════════════════════════════════════════════════
+   PRICE PARSER  — handles ALL Google Sheets / Excel formats:
+   "990,000"              → 990000  ✓
+   "990.000"  (European)  → 990000  ✓
+   "Rs. 450,000"          → 450000  ✓
+   "1,100,000 _ 1,200,000"→ 1150000 ✓  (average of range)
+   "450 000"  (spaces)    → 450000  ✓
+   blank / text           → null    ✓
+═══════════════════════════════════════════════════════════ */
+function cleanPrice(raw) {
+  if (raw === null || raw === undefined) return null;
+  const s = String(raw).trim();
+  if (!s || s === 'nan' || s === 'None' || s === 'N/A') return null;
+
+  // Use config values if available, else safe defaults
+  const minP = (CONFIG.MIN_VALID_PRICE) || 50000;
+  const maxP = (CONFIG.MAX_VALID_PRICE) || 15000000;
+
+  // Split on range separators: _ or – or —
+  const parts = s.split(/\s*[_\u2013\u2014]\s*/);
+  const nums = [];
+
+  for (const p of parts) {
+    // *** KEY FIX: strip ALL non-digit characters ***
+    // This handles: commas, dots, spaces, "Rs.", currency symbols
+    // "Rs. 990,000" → "990000" → 990000
+    // "990.000"     → "990000" → 990000
+    // "1,100,000"   → "1100000" → 1100000
+    const digits = p.replace(/[^\d]/g, '');
+    if (!digits || digits.length < 4) continue; // skip blanks, tiny numbers
+    const n = parseInt(digits, 10);
+    if (n >= minP && n <= maxP) nums.push(n);
+  }
+
+  if (!nums.length) return null;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GENERIC NUMBER PARSER  (for blocks, available, plot size)
+═══════════════════════════════════════════════════════════ */
+function cleanNum(raw) {
+  if (raw === null || raw === undefined) return null;
+  const digits = String(raw).replace(/[^\d.]/g, '').trim();
+  const n = parseFloat(digits);
+  return isNaN(n) ? null : n;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS NORMALISER
+═══════════════════════════════════════════════════════════ */
+function normStatus(s) {
+  s = String(s || '').trim().toLowerCase();
+  if (['available','avalibale','avalable','for sale'].includes(s)) return 'Available';
+  if (['sold out','sold out ','sold','almost sold','soldout'].includes(s))   return 'Sold Out';
+  if (s === 'trending')  return 'Trending';
+  if (s === 'featured')  return 'Featured';
+  if (['coming soon','up coming','upcoming'].includes(s)) return 'Coming Soon';
+  if (['ongoing','new','ongoing projects'].includes(s))   return 'Ongoing';
+  return 'Other';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   YEAR PARSER
+═══════════════════════════════════════════════════════════ */
+function parseYear(v) {
+  const m = String(v || '').match(/20\d\d|19\d\d/);
+  return m ? parseInt(m[0]) : null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REGION CLASSIFIER  — uses URBAN/SUBURBAN lists in config.js
+═══════════════════════════════════════════════════════════ */
+function getRegion(loc) {
+  const l = (loc || '').toLowerCase();
+  const urban    = CONFIG.URBAN_AREAS    || [];
+  const suburban = CONFIG.SUBURBAN_AREAS || [];
+  const labels   = CONFIG.REGION_LABELS  || ['Urban','Suburban','Rural'];
+  if (urban.some(a    => l.includes(a.toLowerCase()))) return labels[0];
+  if (suburban.some(a => l.includes(a.toLowerCase()))) return labels[1];
+  return labels[2];
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORMAT PRICE FOR DISPLAY
+   50000   → "Rs. 50K"
+   500000  → "Rs. 500K"
+   1500000 → "Rs. 1.5M"
+   0 / null→ "N/A"
+═══════════════════════════════════════════════════════════ */
+function fmtPrice(v) {
+  if (!v || v <= 0) return 'N/A';
+  if (v >= 1000000) return 'Rs.\u00a0' + (v / 1000000).toFixed(1) + 'M';
+  if (v >= 1000)    return 'Rs.\u00a0' + Math.round(v / 1000) + 'K';
+  return 'Rs.\u00a0' + Math.round(v).toLocaleString();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV PARSER  — for live Google Sheets data
+═══════════════════════════════════════════════════════════ */
+function parseCSV(csvText) {
+  const result = Papa.parse(csvText, { header:false, skipEmptyLines:true });
+  const rows   = result.data;
+  if (rows.length < 2) return [];
+
+  const data  = [];
+  let lastCo  = '', lastYr = null;
+
+  for (let i = 1; i < rows.length; i++) {
+    const r  = rows[i];
+    const co = (r[5] || '').trim();
+    if (co) { lastCo = co; lastYr = parseYear(r[0]); }
+    const loc = (r[7] || '').trim();
+    if (!loc) continue;
+
+    data.push({
+      co:  lastCo,
+      yr:  lastYr,
+      loc: loc,
+      px:  cleanPrice(r[8]),   // ← uses fixed cleanPrice
+      st:  normStatus(r[9]),
+      tb:  cleanNum(r[10]),
+      av:  cleanNum(r[11]),
+      ep:  cleanNum(r[12]),
+      pn:  (r[6] || '').trim() || null,
+    });
+  }
+  return data;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHART REGISTRY
+═══════════════════════════════════════════════════════════ */
+const charts = {};
+function mkChart(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
+}
+const trunc = (s, n) => (!s || s.length <= n) ? (s||'') : s.substring(0, n) + '…';
+const myColor = (name, i) =>
+  (CONFIG.YOUR_COMPANY && name === CONFIG.YOUR_COMPANY) ? C.gold : MULTI[i % MULTI.length];
+
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN RENDER
+═══════════════════════════════════════════════════════════ */
+function renderDashboard(data) {
+  const CFG = CONFIG || {};
+
+  // Apply header
+  document.getElementById('hTitle').textContent = CFG.DASHBOARD_TITLE    || 'Land Market Dashboard';
+  document.getElementById('hSub').textContent   = CFG.DASHBOARD_SUBTITLE || '';
+  document.getElementById('hDate').textContent  = CFG.DATA_DATE          || '📅 2026';
+
+  // ── Aggregate companies ──
+  const companies = {};
+  data.forEach(r => {
+    if (!companies[r.co]) companies[r.co] = { name:r.co, yr:r.yr, projects:0, blocks:0, statuses:{} };
+    const c = companies[r.co];
+    c.projects++;
+    if (r.tb) c.blocks += r.tb;
+    c.statuses[r.st] = (c.statuses[r.st] || 0) + 1;
+    if (!c.yr && r.yr) c.yr = r.yr;
+  });
+  const coList = Object.values(companies).sort((a, b) => b.projects - a.projects);
+
+  // ── KPIs ──
+  const totalPr     = data.length;
+  const availCount  = data.filter(r => r.st === 'Available').length;
+  const soldCount   = data.filter(r => r.st === 'Sold Out').length;
+  const validPrices = data.map(r => r.px).filter(p => p !== null && p > 0);
+  const avgPx       = validPrices.length
+    ? Math.round(validPrices.reduce((a, b) => a + b, 0) / validPrices.length) : 0;
+  const locs        = new Set(data.map(r => r.loc));
+
+  document.getElementById('hCompanies').textContent = coList.length;
+  document.getElementById('hProjects').textContent  = totalPr.toLocaleString();
+  document.getElementById('hAvailable').textContent = availCount.toLocaleString();
+  document.getElementById('kpi1').textContent  = coList.length;      document.getElementById('kpi1s').textContent = 'Active Players';
+  document.getElementById('kpi2').textContent  = totalPr.toLocaleString(); document.getElementById('kpi2s').textContent = 'All Statuses';
+  document.getElementById('kpi3').textContent  = availCount.toLocaleString(); document.getElementById('kpi3s').textContent = 'Open to Buy';
+  document.getElementById('kpi4').textContent  = soldCount.toLocaleString();  document.getElementById('kpi4s').textContent = 'Completed Sales';
+  document.getElementById('kpi5').textContent  = fmtPrice(avgPx);
+  document.getElementById('kpi5s').textContent = validPrices.length + ' projects with price data';
+  document.getElementById('kpi6').textContent  = locs.size;          document.getElementById('kpi6s').textContent = 'Districts / Areas';
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 1 — BUBBLE: Company Market Presence
+  ───────────────────────────────────────────────────────── */
+  const top10     = coList.slice(0, 10);
+  const maxBlocks = Math.max(...top10.map(c => c.blocks || 1), 1);
+  mkChart('bubbleChart', {
+    type: 'bubble',
+    data: { datasets: top10.map((c, i) => ({
+      label: c.name,
+      data: [{ x: c.yr ? (CFG.CURRENT_YEAR||2026) - c.yr : 5,
+               y: c.projects,
+               r: Math.max(8, Math.round((c.blocks / maxBlocks) * 45)) }],
+      backgroundColor: myColor(c.name, i) + 'bb',
+      borderColor:     myColor(c.name, i),
+      borderWidth: (CFG.YOUR_COMPANY && c.name === CFG.YOUR_COMPANY) ? 3 : 1.5,
+    }))},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'bottom', labels:{ usePointStyle:true, padding:10, font:{size:10} } },
+        tooltip: { callbacks: { label: ctx => {
+          const c = top10[ctx.datasetIndex];
+          return [`${c.name}`,
+            `Years: ${c.yr ? (CFG.CURRENT_YEAR||2026)-c.yr : '?'}`,
+            `Projects: ${c.projects}`,
+            `Total blocks: ${Math.round(c.blocks)}`];
+        }}}
+      },
+      scales: {
+        x: { title:{ display:true, text:'Years in Business', color:C.gold }, grid:{ color:C.border } },
+        y: { title:{ display:true, text:'Projects in Database', color:C.gold }, grid:{ color:C.border } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 2 — TIMELINE: Years Each Company Has Operated
+  ───────────────────────────────────────────────────────── */
+  const coWithYr = coList.filter(c => c.yr).sort((a,b) => a.yr-b.yr).slice(0, 16);
+  mkChart('ageChart', {
+    type: 'bar',
+    data: {
+      labels: coWithYr.map(c => trunc(c.name, 14)),
+      datasets: [{ label:'Years',
+        data:  coWithYr.map(c => (CFG.CURRENT_YEAR||2026) - c.yr),
+        backgroundColor: coWithYr.map((c,i) => myColor(c.name,i)+'88'),
+        borderColor:     coWithYr.map((c,i) => myColor(c.name,i)),
+        borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx =>
+          `${ctx.raw} years (founded ${coWithYr[ctx.dataIndex].yr})` }}},
+      scales: {
+        x: { title:{ display:true, text:'Years', color:C.gold }, grid:{ color:C.border } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 3 — BAR: Projects by Company
+  ───────────────────────────────────────────────────────── */
+  const topN = coList.slice(0, CFG.TOP_COMPANIES_COUNT || 12);
+  mkChart('companyBar', {
+    type: 'bar',
+    data: {
+      labels: topN.map(c => trunc(c.name, 18)),
+      datasets: [{ label:'Projects',
+        data: topN.map(c => c.projects),
+        backgroundColor: topN.map((c,i) => myColor(c.name,i)+'88'),
+        borderColor:     topN.map((c,i) => myColor(c.name,i)),
+        borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 4 — STACKED BAR: Status by Company
+  ───────────────────────────────────────────────────────── */
+  const statusKeys = ['Available','Sold Out','Trending','Featured','Coming Soon','Ongoing'];
+  const statusCols = [C.green,C.red,C.orange,C.purple,C.cyan,C.blue];
+  const stackCo    = coList.slice(0, CFG.TOP_COMPANIES_COUNT || 12);
+  mkChart('stackedBar', {
+    type: 'bar',
+    data: {
+      labels: stackCo.map(c => trunc(c.name, 14)),
+      datasets: statusKeys.map((s,i) => ({
+        label: s,
+        data:  stackCo.map(c => c.statuses[s] || 0),
+        backgroundColor: statusCols[i]+'99',
+        borderColor: statusCols[i], borderWidth:1, borderRadius:2
+      }))
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:9}, padding:10 } } },
+      scales: {
+        x: { stacked:true, grid:{ color:C.border }, ticks:{ font:{size:8}, maxRotation:45 } },
+        y: { stacked:true, title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } }
+      }
+    }
+  });
+  document.getElementById('statusLegend').innerHTML =
+    statusKeys.map((s,i) =>
+      `<span class="leg-item"><span class="leg-dot" style="background:${statusCols[i]}"></span>${s}</span>`
+    ).join('');
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 5 — BAR: Top Locations
+  ───────────────────────────────────────────────────────── */
+  const locCount = {};
+  data.forEach(r => { locCount[r.loc] = (locCount[r.loc]||0)+1; });
+  const topLocs = Object.entries(locCount).sort((a,b)=>b[1]-a[1])
+                         .slice(0, CFG.TOP_LOCATIONS_COUNT||15);
+  mkChart('locationBar', {
+    type: 'bar',
+    data: {
+      labels: topLocs.map(([l])=>l),
+      datasets: [{ label:'Projects', data:topLocs.map(([,n])=>n),
+        backgroundColor:C.purple+'88', borderColor:C.purple, borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 6 — BAR: Avg Price by Location
+  ───────────────────────────────────────────────────────── */
+  const locPrices = {};
+  data.forEach(r => {
+    if (r.px !== null && r.px > 0) {
+      if (!locPrices[r.loc]) locPrices[r.loc] = [];
+      locPrices[r.loc].push(r.px);
+    }
+  });
+  const locAvg = Object.entries(locPrices)
+    .filter(([,a]) => a.length >= 2)
+    .map(([l,a]) => [l, Math.round(a.reduce((x,y)=>x+y,0)/a.length)])
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0, CFG.TOP_PRICE_LOCATIONS_COUNT||12);
+  mkChart('locationPriceBar', {
+    type: 'bar',
+    data: {
+      labels: locAvg.map(([l])=>l),
+      datasets: [{ label:'Avg Price', data:locAvg.map(([,p])=>p),
+        backgroundColor:C.orange+'88', borderColor:C.orange, borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx=>`${fmtPrice(ctx.raw)} per perch` }}},
+      scales: {
+        x: { title:{ display:true, text:'LKR per Perch', color:C.gold }, grid:{ color:C.border },
+             ticks:{ callback: v => fmtPrice(v) } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 7 — GROUPED BAR: Price by Region
+     Regions from config.js URBAN_AREAS / SUBURBAN_AREAS
+  ───────────────────────────────────────────────────────── */
+  const regLabels  = CFG.REGION_LABELS || ['Urban','Suburban','Rural'];
+  const regionData = {};
+  regLabels.forEach(r => { regionData[r] = []; });
+  data.forEach(r => {
+    if (r.px !== null && r.px > 0) regionData[getRegion(r.loc)].push(r.px);
+  });
+
+  const regAvg   = regLabels.map(rg => regionData[rg].length
+    ? Math.round(regionData[rg].reduce((a,b)=>a+b,0) / regionData[rg].length) : 0);
+  const regMax   = regLabels.map(rg => regionData[rg].length
+    ? Math.round(Math.max(...regionData[rg])) : 0);
+  const regCount = regLabels.map(rg => regionData[rg].length);
+  const regColors = [C.red, C.orange, C.green];
+
+  mkChart('priceRegionBar', {
+    type: 'bar',
+    data: {
+      labels: regLabels,
+      datasets: [
+        { label:'Average', data:regAvg,
+          backgroundColor:regColors.map(c=>c+'bb'), borderColor:regColors, borderWidth:1, borderRadius:4 },
+        { label:'Max',     data:regMax,
+          backgroundColor:'rgba(255,255,255,0.07)', borderColor:regColors, borderWidth:1, borderRadius:4 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:10} } },
+        tooltip: { callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${fmtPrice(ctx.raw)}`,
+          afterBody: items => `Data points: ${regCount[items[0].dataIndex]}`,
+        }}
+      },
+      scales: {
+        x: { grid:{ color:C.border } },
+        y: { beginAtZero:true,
+             title:{ display:true, text:'LKR per Perch', color:C.gold },
+             grid:{ color:C.border },
+             ticks:{ callback: v => fmtPrice(v) } }
+      }
+    }
+  });
+
+  // Region insight text
+  const validRegIdx = regAvg.map((v,i)=>({v,i})).filter(x=>x.v>0);
+  if (validRegIdx.length > 0) {
+    const highest = validRegIdx.reduce((a,b) => a.v>=b.v ? a : b);
+    const lowest  = validRegIdx.reduce((a,b) => a.v<=b.v ? a : b);
+    const pct     = lowest.v > 0
+      ? Math.round(((highest.v - lowest.v) / lowest.v) * 100) : 0;
+    document.getElementById('priceInsight').textContent =
+      `${regLabels[highest.i]} commands the highest avg price: ${fmtPrice(regAvg[highest.i])} per perch. ` +
+      `${regLabels[lowest.i]} is most affordable at ${fmtPrice(regAvg[lowest.i])}. ` +
+      `${pct}% price gap between highest and lowest region. ` +
+      `Total price data points: ${regCount.reduce((a,b)=>a+b,0)}.`;
+  } else {
+    document.getElementById('priceInsight').textContent =
+      'No price data available for region comparison. Check that price column has data and MIN_VALID_PRICE in config.js is correct.';
+  }
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 8 — COMBO: Plot Size Distribution
+     Buckets from config.js PLOT_BUCKETS
+  ───────────────────────────────────────────────────────── */
+  const rawBuckets = (CFG.PLOT_BUCKETS && CFG.PLOT_BUCKETS.length)
+    ? CFG.PLOT_BUCKETS
+    : [
+        { label:'1–5',   max:5    },
+        { label:'6–8',   max:8    },
+        { label:'9–11',  max:11   },
+        { label:'12–15', max:15   },
+        { label:'16–20', max:20   },
+        { label:'20+',   max:9999 },
+      ];
+
+  const buckets = rawBuckets.map(b => ({ ...b, count:0, prices:[], avail:[] }));
+  data.forEach(r => {
+    if (!r.ep || r.ep <= 0) return;
+    const bucket = buckets.find(b => r.ep <= b.max);
+    if (!bucket) return;
+    bucket.count++;
+    if (r.px !== null && r.px > 0) bucket.prices.push(r.px);
+    if (r.av !== null && r.av > 0) bucket.avail.push(r.av);
+  });
+
+  const bucketAvgPrice = buckets.map(b =>
+    b.prices.length ? Math.round(b.prices.reduce((a,c)=>a+c,0)/b.prices.length) : 0);
+  const bucketAvgAvail = buckets.map(b =>
+    b.avail.length  ? Math.round(b.avail.reduce((a,c)=>a+c,0)/b.avail.length)  : 0);
+
+  mkChart('plotSizeBar', {
+    type: 'bar',
+    data: {
+      labels: buckets.map(b => b.label + '\nperches'),
+      datasets: [
+        { type:'bar',  label:'Projects',      data:buckets.map(b=>b.count),
+          backgroundColor:C.cyan+'88', borderColor:C.cyan, borderWidth:1, borderRadius:4, yAxisID:'y' },
+        { type:'line', label:'Avg Price (LKR)',data:bucketAvgPrice,
+          borderColor:C.orange, backgroundColor:C.orange+'22', borderWidth:2,
+          pointRadius:5, pointBackgroundColor:C.orange, tension:0.3, yAxisID:'y2', fill:false },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:10} } },
+        tooltip: { callbacks: { label: ctx => {
+          if (ctx.dataset.label === 'Avg Price (LKR)')
+            return `Avg Price: ${fmtPrice(ctx.raw)}`;
+          return [
+            `Projects: ${ctx.raw}`,
+            `Avg available plots: ${bucketAvgAvail[ctx.dataIndex]}`,
+          ];
+        }}}
+      },
+      scales: {
+        x:  { grid:{ color:C.border }, ticks:{ font:{ size:9 } } },
+        y:  { position:'left',  title:{ display:true, text:'Project Count', color:C.cyan },
+              grid:{ color:C.border }, beginAtZero:true },
+        y2: { position:'right', title:{ display:true, text:'Avg Price (LKR)', color:C.orange },
+              grid:{ display:false }, beginAtZero:true,
+              ticks:{ callback: v => fmtPrice(v) } },
+      }
+    }
+  });
+
+  // Plot insight
+  const bucketsWithData = buckets
+    .map((b,i) => ({ ...b, avgPrice:bucketAvgPrice[i], avgAvail:bucketAvgAvail[i] }))
+    .filter(b => b.count >= 3);
+  if (bucketsWithData.length > 0) {
+    const most    = bucketsWithData.reduce((a,b) => a.count >= b.count ? a : b);
+    const cheapest = bucketsWithData.filter(b=>b.avgPrice>0)
+                                    .reduce((a,b) => a.avgPrice <= b.avgPrice ? a : b, bucketsWithData[0]);
+    document.getElementById('plotInsight').textContent =
+      `${most.label} perch plots are most offered (${most.count} projects, avg ${most.avgAvail} plots available). ` +
+      `${cheapest.label} perch sizes are most affordable at ${fmtPrice(cheapest.avgPrice)} avg per perch. ` +
+      `Buyers have the most choice in mid-range plot sizes.`;
+  }
+
+
+  /* ─────────────────────────────────────────────────────────
+     TABLE 1 — Largest Projects
+  ───────────────────────────────────────────────────────── */
+  const topProj = data.filter(r => r.tb > 0).sort((a,b) => (b.tb||0)-(a.tb||0)).slice(0, 12);
+  document.getElementById('topProjectsBody').innerHTML = topProj.map(r => `
+    <tr>
+      <td>${r.co}</td><td>${r.loc}</td>
+      <td><strong>${r.tb}</strong></td>
+      <td>${fmtPrice(r.px)}</td>
+      <td><span class="badge b-${r.st.toLowerCase().replace(/ /g,'')}">${r.st}</span></td>
+      <td>${r.av ?? 'N/A'}</td>
+    </tr>`).join('');
+
+
+  /* ─────────────────────────────────────────────────────────
+     TABLE 2 — Available Opportunities
+  ───────────────────────────────────────────────────────── */
+  const avail = data.filter(r => r.st === 'Available' && r.av > 0)
+    .sort((a,b) => (b.av||0)-(a.av||0)).slice(0, 15);
+  document.getElementById('availBody').innerHTML = avail.map(r => `
+    <tr>
+      <td>${r.co}</td><td>${r.loc}</td>
+      <td>${fmtPrice(r.px)}</td>
+      <td><strong>${r.av}</strong></td>
+      <td>${r.ep ? r.ep+' perches' : 'N/A'}</td>
+      <td>${r.tb ?? 'N/A'}</td>
+    </tr>`).join('');
+
+
+  /* ─────────────────────────────────────────────────────────
+     EXECUTIVE SUMMARY INSIGHT BOXES
+     Reads from CONFIG.INSIGHTS in config.js
+     Falls back to defaults if INSIGHTS not defined
+  ───────────────────────────────────────────────────────── */
+  const top3co = coList.slice(0, 3)
+    .map(c => `${c.name} (${c.projects} projects)`).join(', ');
+  const autoText = `Top competitors: ${top3co}. Monitor their pricing and new location launches closely.`;
+
+  // Fallback insights in case config.js has no INSIGHTS array (old version)
+  const fallbackInsights = [
+    { icon:'🔴', title:'Market Saturation Zones',
+      text:'Homagama, Athurugiriya, and Piliyandala show the highest project density.' },
+    { icon:'🟡', title:'Growth Opportunities',
+      text:'Kurunegala, Tangalle, and Matara show less competition with growing demand.' },
+    { icon:'🟢', title:'Pricing Strategy',
+      text:'Rs. 200,000–500,000/perch shows the highest absorption rate.' },
+    { icon:'📊', title:'Project Scale Sweet Spot',
+      text:'20–60 block projects show fastest sell-through.' },
+    { icon:'🏗️', title:'Plot Size Preference',
+      text:'9–11 perch plots dominate. 6–8 trending in urban areas.' },
+    { icon:'⚡', title:'Top Competitive Threats', text:'{AUTO}' },
+  ];
+
+  const insightItems = (CFG.INSIGHTS && CFG.INSIGHTS.length)
+    ? CFG.INSIGHTS : fallbackInsights;
+
+  document.getElementById('insightGrid').innerHTML = insightItems.map(item => `
+    <div class="insight">
+      <h4>${item.icon || ''} ${item.title || ''}</h4>
+      <p>${(item.text || '') === '{AUTO}' ? autoText : (item.text || '')}</p>
+    </div>`).join('');
+
+  // Hide loader
+  document.getElementById('loader').style.display = 'none';
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DATA LOADER
+   1. Try Google Sheets URL from config.js
+   2. Fall back to data.json
+═══════════════════════════════════════════════════════════ */
+async function loadAndRender() {
+  const src = document.getElementById('dataSource');
+  const url = CONFIG.GOOGLE_SHEET_CSV_URL || '';
+
+  if (url.length > 10) {
+    try {
+      src.textContent = '⏳ Fetching from Google Sheets...';
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const csv  = await resp.text();
+      const data = parseCSV(csv);
+      if (data.length < 5) throw new Error('Too few rows');
+      renderDashboard(data);
+      const priceCount = data.filter(r=>r.px!==null).length;
+      src.textContent =
+        `✅ Live · Google Sheets · Updated: ${new Date().toLocaleTimeString()} · ${data.length} projects · ${priceCount} with prices`;
+    } catch (e) {
+      console.warn('Google Sheets failed:', e.message);
+      src.textContent = `⚠️ Google Sheets error (${e.message}) — falling back to data.json`;
+      await loadJSON(src);
+    }
+  } else {
+    await loadJSON(src);
+  }
+}
+
+async function loadJSON(src) {
+  try {
+    const resp = await fetch('data.json');
+    const data = await resp.json();
+    renderDashboard(data);
+    const priceCount = data.filter(r=>r.px!==null).length;
+    src.textContent =
+      `📁 Offline data (data.json) · ${data.length} projects · ${priceCount} with prices · Set GOOGLE_SHEET_CSV_URL in config.js to go live`;
+  } catch(e) {
+    src.textContent = '❌ Cannot load data.json — make sure all 4 files are uploaded to GitHub';
+    document.getElementById('loader').style.display = 'none';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+loadAndRender();
+
+const mins = CONFIG.AUTO_REFRESH_MINUTES || 0;
+if (mins > 0) setInterval(loadAndRender, mins * 60000);
+
+</script>
+</body>
+</html>
