@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prime Land — Competitor Analysis Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <!-- Must be named exactly config.js -->
+  <script src="config.js"></script>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">LOADING DASHBOARD...</div>
+</div>
+
+<header class="header">
+  <div>
+    <h1 id="hTitle">Loading...</h1>
+    <div class="sub" id="hSub"></div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="val" id="hCompanies">—</div><div class="lbl">Companies</div></div>
+    <div class="hstat"><div class="val" id="hProjects">—</div><div class="lbl">Projects</div></div>
+    <div class="hstat"><div class="val" id="hAvailable">—</div><div class="lbl">Available</div></div>
+    <div class="date-badge" id="hDate">📅 ...</div>
+  </div>
+</header>
+
+<div class="status-bar">
+  <span class="status-dot"></span>
+  <span id="dataSource" class="source-label">Initialising...</span>
+  <button class="refresh-btn" onclick="loadAndRender()">⟳ Refresh Data</button>
+</div>
+
+<div class="grid">
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-lbl">Companies Tracked</div><div class="kpi-val" id="kpi1">—</div><div class="kpi-sub" id="kpi1s"></div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Total Projects</div><div class="kpi-val" id="kpi2">—</div><div class="kpi-sub" id="kpi2s"></div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Available Now</div><div class="kpi-val" id="kpi3">—</div><div class="kpi-sub" id="kpi3s"></div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Sold Out</div><div class="kpi-val" id="kpi4">—</div><div class="kpi-sub" id="kpi4s"></div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Avg Price / Perch</div><div class="kpi-val" id="kpi5">—</div><div class="kpi-sub" id="kpi5s">Avg Price</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Unique Locations</div><div class="kpi-val" id="kpi6">—</div><div class="kpi-sub" id="kpi6s"></div></div>
+  </div>
+
+  <div class="section-label">📊 Company Intelligence</div>
+
+  <div class="card span-8">
+    <div class="card-title"><span>🫧</span> Company Market Presence</div>
+    <div class="card-sub">Years in market vs projects tracked — bubble size = total blocks</div>
+    <div class="ch ch-480"><canvas id="bubbleChart"></canvas></div>
+  </div>
+
+  <div class="card span-4">
+    <div class="card-title"><span>⏳</span> Company Establishment Timeline</div>
+    <div class="card-sub">Years each company has been operating</div>
+    <div class="ch ch-480"><canvas id="ageChart"></canvas></div>
+  </div>
+
+  <div class="card span-6">
+    <div class="card-title"><span>🏢</span> Projects by Company</div>
+    <div class="card-sub">Number of projects tracked per company</div>
+    <div class="ch ch-480"><canvas id="companyBar"></canvas></div>
+  </div>
+
+  <div class="card span-6">
+    <div class="card-title"><span>📋</span> Project Status Breakdown by Company</div>
+    <div class="card-sub">Available / Sold Out / Trending / Other per company</div>
+    <div class="status-legend" id="statusLegend"></div>
+    <div class="ch ch-400"><canvas id="stackedBar"></canvas></div>
+  </div>
+
+  <div class="section-label">📍 Location & Pricing Intelligence</div>
+
+  <div class="card span-6">
+    <div class="card-title"><span>📍</span> Top Locations by Project Count</div>
+    <div class="card-sub">Most active areas across all companies</div>
+    <div class="ch ch-480"><canvas id="locationBar"></canvas></div>
+  </div>
+
+  <div class="card span-6">
+    <div class="card-title"><span>💰</span> Average Price / Perch by Location</div>
+    <div class="card-sub">Locations with sufficient pricing data (LKR)</div>
+    <div class="ch ch-480"><canvas id="locationPriceBar"></canvas></div>
+  </div>
+
+  <div class="card span-6">
+    <div class="card-title"><span>📊</span> Price Distribution by Region Type</div>
+    <div class="card-sub">Urban / Suburban / Rural — average and max price per perch (LKR)</div>
+    <div class="ch ch-300"><canvas id="priceRegionBar"></canvas></div>
+    <div class="insight"><h4>💡 Price Insight</h4><p id="priceInsight">Calculating...</p></div>
+  </div>
+
+  <div class="card span-6">
+    <div class="card-title"><span>📐</span> Plot Size Distribution (Perches)</div>
+    <div class="card-sub">How many projects offer each plot size band</div>
+    <div class="ch ch-300"><canvas id="plotSizeBar"></canvas></div>
+    <div class="insight"><h4>💡 Plot Size Insight</h4><p id="plotInsight">Calculating...</p></div>
+  </div>
+
+  <div class="section-label">🏆 Project Data Tables</div>
+
+  <div class="card span-6">
+    <div class="card-title"><span>🏆</span> Largest Projects by Total Blocks</div>
+    <div class="card-sub">Top 12 projects ranked by scale</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Company</th><th>Location</th><th>Blocks</th><th>Price/Perch</th><th>Status</th><th>Available</th></tr></thead><tbody id="topProjectsBody"></tbody></table></div>
+  </div>
+
+  <div class="card span-6">
+    <div class="card-title"><span>🎯</span> Available Projects — Investment Opportunities</div>
+    <div class="card-sub">Projects with available plots, sorted by availability count</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Company</th><th>Location</th><th>Price/Perch</th><th>Available</th><th>Plot Size</th><th>Total Blocks</th></tr></thead><tbody id="availBody"></tbody></table></div>
+  </div>
+
+  <div class="card span-12">
+    <div class="card-title"><span>📝</span> Executive Summary & Strategic Insights</div>
+    <div class="summary-grid">
+      <div class="insight"><h4>🔴 Market Saturation Zones</h4><p>Homagama, Athurugiriya, and Piliyandala show highest project density.</p></div>
+      <div class="insight"><h4>🟡 Growth Opportunities</h4><p>Emerging corridors: Kurunegala, Tangalle, and Matara show less competition.</p></div>
+      <div class="insight"><h4>🟢 Pricing Strategy</h4><p>Optimal price band Rs. 200,000–500,000/perch shows highest absorption.</p></div>
+      <div class="insight"><h4>📊 Project Scale Sweet Spot</h4><p>Projects with 20–60 blocks show fastest sell-through.</p></div>
+      <div class="insight"><h4>🏗️ Plot Size Preference</h4><p>10‑perch plots dominate. 6‑perch plots trending in urban areas.</p></div>
+      <div class="insight"><h4>⚡ Top Competitive Threats</h4><p id="threatInsight">Loading competitor data...</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── COLOUR PALETTE ── */
+const C = {
+  gold:'#d4a574', goldLight:'#e8c9a0',
+  blue:'#4a90d9', green:'#2ecc71', red:'#e74c3c',
+  purple:'#9b59b6', cyan:'#00bcd4', orange:'#f39c12',
+  text:'#a0a0b0', border:'rgba(42,42,74,0.6)'
+};
+const MULTI = [
+  C.blue, C.green, C.purple, C.cyan, C.orange, C.red,
+  '#52be80','#3498db','#8e44ad','#1abc9c','#e67e22','#c0392b',
+  '#27ae60','#2980b9','#d35400'
+];
+const STATUS_COLORS = {
+  'Available':C.green, 'Sold Out':C.red, 'Trending':C.orange,
+  'Featured':C.purple, 'Coming Soon':C.cyan, 'Ongoing':C.blue, 'Other':C.text
+};
+
+Chart.defaults.color       = C.text;
+Chart.defaults.borderColor = C.border;
+Chart.defaults.font.family = "'Nunito', sans-serif";
+
+function normStatus(s) {
+  s = String(s || '').trim().toLowerCase();
+  if (['available','avalibale','avalable','for sale','available '].includes(s)) return 'Available';
+  if (['sold out','sold out ','sold','almost sold'].includes(s))               return 'Sold Out';
+  if (s === 'trending')                                                         return 'Trending';
+  if (s === 'featured')                                                         return 'Featured';
+  if (['coming soon','up coming','upcoming','up coming'].includes(s))           return 'Coming Soon';
+  if (['ongoing','new'].includes(s))                                            return 'Ongoing';
+  return 'Other';
+}
+
+function parseYear(v) {
+  const m = String(v || '').match(/20\d\d|19\d\d/);
+  return m ? parseInt(m[0]) : null;
+}
+
+function getRegion(loc) {
+  const l = loc.toLowerCase();
+  if (CONFIG.URBAN_AREAS.some(a => l.includes(a.toLowerCase())))    return 'Urban';
+  if (CONFIG.SUBURBAN_AREAS.some(a => l.includes(a.toLowerCase()))) return 'Suburban';
+  return 'Rural';
+}
+
+/* ── CSV PARSER WITH HEADER MAP ── */
+function parseCSV(csvText) {
+  const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
+  const rows = result.data;
+  if (rows.length < 2) return [];
+
+  let idx = { co:5, yr:0, loc:7, px:8, st:9, tb:10, av:11, ep:12, pn:6 }; // defaults
+  const map = CONFIG.CSV_HEADER_MAP;
+  if (map && typeof map === 'object') {
+    const headerRow = rows[0].map(h => String(h).trim());
+    const findCol = (key) => {
+      const target = map[key];
+      return target ? headerRow.findIndex(h => h === target.trim()) : -1;
+    };
+    const colIdx = {};
+    const keys = ['company','year','location','price','status','totalBlocks','available','plotSize','projectName'];
+    keys.forEach(k => { const i = findCol(k); if (i !== -1) colIdx[k] = i; });
+    if (colIdx.company)     idx.co = colIdx.company;
+    if (colIdx.year)        idx.yr = colIdx.year;
+    if (colIdx.location)    idx.loc = colIdx.location;
+    if (colIdx.price)       idx.px = colIdx.price;
+    if (colIdx.status)      idx.st = colIdx.status;
+    if (colIdx.totalBlocks) idx.tb = colIdx.totalBlocks;
+    if (colIdx.available)   idx.av = colIdx.available;
+    if (colIdx.plotSize)    idx.ep = colIdx.plotSize;
+    if (colIdx.projectName) idx.pn = colIdx.projectName;
+  }
+
+  const data = [];
+  let lastCo = '', lastYr = null;
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const co = (r[idx.co] || '').trim();
+    if (co) { lastCo = co; lastYr = parseYear(r[idx.yr]); }
+    const loc = (r[idx.loc] || '').trim();
+    if (!loc) continue;
+    data.push({
+      co:  lastCo,
+      yr:  lastYr,
+      loc: loc,
+      px:  parseFloat(r[idx.px])  || null,
+      st:  normStatus(r[idx.st]),
+      tb:  parseFloat(r[idx.tb]) || null,
+      av:  parseFloat(r[idx.av]) || null,
+      ep:  parseFloat(r[idx.ep]) || null,
+      pn:  (r[idx.pn] || '').trim() || null,
+    });
+  }
+  return data;
+}
+
+/* ── CHART REGISTRY ── */
+const charts = {};
+function mkChart(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
+}
+
+function renderDashboard(data) {
+  document.getElementById('hTitle').textContent = CONFIG.DASHBOARD_TITLE;
+  document.getElementById('hSub').textContent   = CONFIG.DASHBOARD_SUBTITLE;
+  document.getElementById('hDate').textContent  = CONFIG.DATA_DATE;
+
+  const companies = {};
+  data.forEach(r => {
+    if (!companies[r.co]) companies[r.co] = { name:r.co, yr:r.yr, projects:0, blocks:0, statuses:{} };
+    const c = companies[r.co];
+    c.projects++;
+    if (r.tb) c.blocks += r.tb;
+    c.statuses[r.st] = (c.statuses[r.st] || 0) + 1;
+    if (!c.yr && r.yr) c.yr = r.yr;
+  });
+  const coList = Object.values(companies).sort((a,b) => b.projects - a.projects);
+
+  const totalCo = coList.length;
+  const totalPr = data.length;
+  const availCount = data.filter(r => r.st === 'Available').length;
+  const soldCount  = data.filter(r => r.st === 'Sold Out').length;
+  const prices = data.filter(r => r.px > 0).map(r => r.px);
+  const avgPx = prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0;
+  const locs = new Set(data.map(r => r.loc));
+
+  document.getElementById('hCompanies').textContent = totalCo;
+  document.getElementById('hProjects').textContent  = totalPr.toLocaleString();
+  document.getElementById('hAvailable').textContent = availCount.toLocaleString();
+
+  document.getElementById('kpi1').textContent = totalCo;           document.getElementById('kpi1s').textContent = 'Active Players';
+  document.getElementById('kpi2').textContent = totalPr.toLocaleString(); document.getElementById('kpi2s').textContent = 'All Statuses';
+  document.getElementById('kpi3').textContent = availCount.toLocaleString(); document.getElementById('kpi3s').textContent = 'Open to Buy';
+  document.getElementById('kpi4').textContent = soldCount.toLocaleString();  document.getElementById('kpi4s').textContent = 'Completed Sales';
+  document.getElementById('kpi5').textContent = avgPx > 0 ? 'Rs.'+(avgPx/1000).toFixed(0)+'K' : 'N/A';
+  document.getElementById('kpi5s').textContent = 'Avg Price';
+  document.getElementById('kpi6').textContent = locs.size;         document.getElementById('kpi6s').textContent = 'Districts/Areas';
+
+  const myColor = (name, i) => name === CONFIG.YOUR_COMPANY ? C.gold : MULTI[i % MULTI.length];
+
+  /* ── CHART 1: Bubble ── */
+  const top10 = coList.slice(0,10);
+  mkChart('bubbleChart', {
+    type: 'bubble',
+    data: {
+      datasets: top10.map((c,i) => ({
+        label: c.name,
+        data: [{ x: c.yr ? 2026-c.yr : 5, y: c.projects, r: Math.min(Math.sqrt(c.blocks||c.projects*10)*2.5, 40) }],
+        backgroundColor: myColor(c.name,i)+'cc',
+        borderColor: myColor(c.name,i),
+        borderWidth: c.name===CONFIG.YOUR_COMPANY ? 3 : 1.5,
+      }))
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, padding:12, font:{size:10} } },
+        tooltip:{ callbacks:{ label: ctx => {
+          const c = top10[ctx.datasetIndex];
+          return [`${c.name}`, `Years: ${c.yr?2026-c.yr:'?'}`, `Projects: ${c.projects}`, `Blocks: ${Math.round(c.blocks)}`];
+        }}}
+      },
+      scales:{ x:{ title:{ display:true, text:'Years in Business', color:C.gold }, grid:{ color:C.border } },
+               y:{ title:{ display:true, text:'Projects in DB',    color:C.gold }, grid:{ color:C.border } } }
+    }
+  });
+
+  /* ── CHART 9: Timeline ── */
+  const coWithYr = coList.filter(c => c.yr).sort((a,b)=>a.yr-b.yr).slice(0,16);
+  mkChart('ageChart', {
+    type: 'bar',
+    data: {
+      labels: coWithYr.map(c => c.name.length>14 ? c.name.substring(0,14)+'…' : c.name),
+      datasets: [{
+        label:'Years in Business', data: coWithYr.map(c=>2026-c.yr),
+        backgroundColor: coWithYr.map(c=>c.name===CONFIG.YOUR_COMPANY?C.gold:C.blue+'88'),
+        borderColor:     coWithYr.map(c=>c.name===CONFIG.YOUR_COMPANY?C.gold:C.blue),
+        borderWidth:1, borderRadius:4
+      }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ title:{ display:true, text:'Years', color:C.gold }, grid:{ color:C.border } },
+               y:{ grid:{ display:false }, ticks:{ font:{ size:9 } } } }
+    }
+  });
+
+  /* ── CHART 3: Projects by Company ── */
+  const topN = coList.slice(0, CONFIG.TOP_COMPANIES_COUNT);
+  mkChart('companyBar', {
+    type: 'bar',
+    data: {
+      labels: topN.map(c => c.name.length>18 ? c.name.substring(0,18)+'…' : c.name),
+      datasets: [{
+        label:'Projects', data: topN.map(c=>c.projects),
+        backgroundColor: topN.map((c,i)=>myColor(c.name,i)+'88'),
+        borderColor:     topN.map((c,i)=>myColor(c.name,i)),
+        borderWidth:1, borderRadius:4
+      }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ title:{ display:true, text:'Number of Projects', color:C.gold }, grid:{ color:C.border } },
+               y:{ grid:{ display:false }, ticks:{ font:{ size:9 } } } }
+    }
+  });
+
+  /* ── CHART 10: Status Breakdown ── */
+  const statusKeys = ['Available','Sold Out','Trending','Featured','Coming Soon','Ongoing'];
+  const statusCols = [C.green, C.red, C.orange, C.purple, C.cyan, C.blue];
+  const stackCo = coList.slice(0, CONFIG.TOP_COMPANIES_COUNT);
+  mkChart('stackedBar', {
+    type:'bar',
+    data:{
+      labels: stackCo.map(c => c.name.length>14 ? c.name.substring(0,14)+'…' : c.name),
+      datasets: statusKeys.map((s,i) => ({
+        label:s,
+        data: stackCo.map(c => c.statuses[s] || 0),
+        backgroundColor: statusCols[i]+'99',
+        borderColor: statusCols[i],
+        borderWidth:1, borderRadius:2
+      }))
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:9}, padding:10 } } },
+      scales:{
+        x:{ stacked:true, grid:{ color:C.border }, ticks:{ font:{size:8}, maxRotation:45 } },
+        y:{ stacked:true, title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } }
+      }
+    }
+  });
+  document.getElementById('statusLegend').innerHTML =
+    statusKeys.map((s,i) => `<span class="leg-item"><span class="leg-dot" style="background:${statusCols[i]}"></span>${s}</span>`).join('');
+
+  /* ── CHART 4: Top Locations ── */
+  const locCount = {};
+  data.forEach(r => { locCount[r.loc] = (locCount[r.loc]||0)+1; });
+  const topLocs = Object.entries(locCount).sort((a,b)=>b[1]-a[1]).slice(0,CONFIG.TOP_LOCATIONS_COUNT);
+  mkChart('locationBar', {
+    type:'bar',
+    data:{
+      labels: topLocs.map(([l])=>l),
+      datasets:[{ label:'Projects', data:topLocs.map(([,n])=>n), backgroundColor:C.purple+'88', borderColor:C.purple, borderWidth:1, borderRadius:4 }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } },
+               y:{ grid:{ display:false }, ticks:{ font:{ size:9 } } } }
+    }
+  });
+
+  /* ── CHART 6: Avg Price by Location ── */
+  const locPrices = {};
+  data.forEach(r => { if (r.px>0) { if (!locPrices[r.loc]) locPrices[r.loc]=[]; locPrices[r.loc].push(r.px); } });
+  const locAvg = Object.entries(locPrices)
+    .filter(([,a])=>a.length>=2)
+    .map(([l,a])=>([l, Math.round(a.reduce((x,y)=>x+y,0)/a.length)]))
+    .sort((a,b)=>b[1]-a[1]).slice(0,12);
+  mkChart('locationPriceBar', {
+    type:'bar',
+    data:{
+      labels: locAvg.map(([l])=>l),
+      datasets:[{ label:'Avg Price (LKR)', data:locAvg.map(([,p])=>p), backgroundColor:C.orange+'88', borderColor:C.orange, borderWidth:1, borderRadius:4 }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => `Rs. ${ctx.raw.toLocaleString()}` } } },
+      scales:{ x:{ title:{ display:true, text:'LKR per Perch', color:C.gold }, grid:{ color:C.border }, ticks:{ callback: v => 'Rs.'+(v/1000).toFixed(0)+'K' } },
+               y:{ grid:{ display:false }, ticks:{ font:{ size:9 } } } }
+    }
+  });
+
+  /* ── CHART 5: Price by Region ── */
+  const regions = { Urban:[], Suburban:[], Rural:[] };
+  data.forEach(r => { if (r.px>0) regions[getRegion(r.loc)].push(r.px); });
+  const regLabels = ['Urban','Suburban','Rural'];
+  const regColors = [C.red, C.orange, C.green];
+  const regAvg = regLabels.map(rg => regions[rg].length ? Math.round(regions[rg].reduce((a,b)=>a+b,0)/regions[rg].length) : 0);
+  const regMax = regLabels.map(rg => regions[rg].length ? Math.max(...regions[rg]) : 0);
+  mkChart('priceRegionBar', {
+    type:'bar',
+    data:{
+      labels: regLabels,
+      datasets:[
+        { label:'Average', data:regAvg, backgroundColor:regColors.map(c=>c+'99'), borderColor:regColors, borderWidth:1, borderRadius:4 },
+        { label:'Max',     data:regMax, backgroundColor:'rgba(255,255,255,0.06)', borderColor:regColors, borderWidth:1, borderRadius:4 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:10} } }, tooltip:{ callbacks:{ label: ctx => `Rs. ${ctx.raw.toLocaleString()}` } } },
+      scales:{ x:{ grid:{ color:C.border } }, y:{ title:{ display:true, text:'LKR per Perch', color:C.gold }, grid:{ color:C.border }, ticks:{ callback: v => 'Rs.'+(v/1000000).toFixed(1)+'M' } } }
+    }
+  });
+  const prTop = regLabels.reduce((a,b) => regAvg[regLabels.indexOf(a)] >= regAvg[regLabels.indexOf(b)] ? a : b);
+  document.getElementById('priceInsight').textContent =
+    `${prTop} areas have the highest avg price at Rs. ${(regAvg[regLabels.indexOf(prTop)]/1000).toFixed(0)}K/perch.` +
+    (regAvg[0]>0 && regAvg[2]>0 ? ` Urban rates are ${(((regAvg[0]-regAvg[2])/regAvg[2])*100).toFixed(0)}% above rural.` : '');
+
+  /* ── CHART 8: Plot Size ── */
+  const plotBuckets = { '1–5':0, '6–8':0, '9–11':0, '12–15':0, '16–20':0, '20+':0 };
+  let totalPlotsWithSize = 0;
+  data.forEach(r => {
+    const p = r.ep;
+    if (!p) return;
+    totalPlotsWithSize++;
+    if      (p<=5)  plotBuckets['1–5']++;
+    else if (p<=8)  plotBuckets['6–8']++;
+    else if (p<=11) plotBuckets['9–11']++;
+    else if (p<=15) plotBuckets['12–15']++;
+    else if (p<=20) plotBuckets['16–20']++;
+    else            plotBuckets['20+']++;
+  });
+  const plotLabels = Object.keys(plotBuckets);
+  const plotData   = Object.values(plotBuckets);
+  mkChart('plotSizeBar', {
+    type:'bar',
+    data:{
+      labels: plotLabels,
+      datasets:[{ label:'Projects', data:plotData, backgroundColor:MULTI.slice(0,6).map(c=>c+'99'), borderColor:MULTI.slice(0,6), borderWidth:1, borderRadius:4 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ title:{ display:true, text:'Plot Size (Perches)', color:C.gold }, grid:{ color:C.border } },
+               y:{ title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } } }
+    }
+  });
+  const topPlot = Object.entries(plotBuckets).sort((a,b)=>b[1]-a[1])[0];
+  const topPlotPct = totalPlotsWithSize ? ((topPlot[1]/totalPlotsWithSize)*100).toFixed(0) : 0;
+  document.getElementById('plotInsight').textContent =
+    `${topPlot[0]}-perch plots are most common (${topPlot[1]} projects, ${topPlotPct}% of all with size). Market favours mid‑range sizes.`;
+
+  /* ── Table 1: Largest Projects ── */
+  const topProj = data.filter(r => r.tb>0).sort((a,b)=>(b.tb||0)-(a.tb||0)).slice(0,12);
+  document.getElementById('topProjectsBody').innerHTML = topProj.map(r => `
+    <tr><td>${r.co}</td><td>${r.loc}</td><td><strong>${r.tb}</strong></td><td>${r.px ? 'Rs. '+r.px.toLocaleString() : 'N/A'}</td><td><span class="badge b-${r.st.toLowerCase().replace(/ /g,'')}">${r.st}</span></td><td>${r.av ?? 'N/A'}</td></tr>`).join('');
+
+  /* ── Table 2: Available Opportunities ── */
+  const avail = data.filter(r => r.st==='Available' && r.av>0).sort((a,b)=>(b.av||0)-(a.av||0)).slice(0,15);
+  document.getElementById('availBody').innerHTML = avail.map(r => `
+    <tr><td>${r.co}</td><td>${r.loc}</td><td>${r.px ? 'Rs. '+r.px.toLocaleString() : 'N/A'}</td><td><strong>${r.av}</strong></td><td>${r.ep ? r.ep+' perches' : 'N/A'}</td><td>${r.tb ?? 'N/A'}</td></tr>`).join('');
+
+  /* ── Threat insight ── */
+  const top3 = coList.slice(0,3).map(c => `${c.name} (${c.projects} projects)`).join(', ');
+  document.getElementById('threatInsight').textContent = `Top competitors: ${top3}. Monitor their pricing and new location launches closely.`;
+
+  document.getElementById('loader').style.display = 'none';
+}
+
+/* ── DATA LOADER ── */
+async function loadAndRender() {
+  const src = document.getElementById('dataSource');
+  if (CONFIG.GOOGLE_SHEET_CSV_URL && CONFIG.GOOGLE_SHEET_CSV_URL.length > 10) {
+    try {
+      src.textContent = '⏳ Fetching from Google Sheets...';
+      const resp = await fetch(CONFIG.GOOGLE_SHEET_CSV_URL);
+      if (!resp.ok) throw new Error('HTTP '+resp.status);
+      const csv = await resp.text();
+      const data = parseCSV(csv);
+      if (data.length < 5) throw new Error('Too few rows parsed');
+      renderDashboard(data);
+      src.textContent = '✅ Live from Google Sheets · Last updated: '+new Date().toLocaleTimeString();
+    } catch(e) {
+      console.warn('Google Sheets failed:', e.message, '— falling back to data.json');
+      loadLocalJSON(src);
+    }
+  } else {
+    loadLocalJSON(src);
+  }
+}
+
+async function loadLocalJSON(src) {
+  try {
+    const resp = await fetch('data.json');
+    const data = await resp.json();
+    renderDashboard(data);
+    src.textContent = '📁 Using offline data (data.json) · Set GOOGLE_SHEET_CSV_URL in config.js to go live';
+  } catch(e) {
+    src.textContent = '❌ Could not load data.json — make sure all files are in the same folder';
+    console.error(e);
+  }
+}
+
+loadAndRender();
+if (CONFIG.AUTO_REFRESH_MINUTES > 0) setInterval(loadAndRender, CONFIG.AUTO_REFRESH_MINUTES * 60000);
+</script>
+</body>
+</html>
