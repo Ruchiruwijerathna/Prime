@@ -10,7 +10,7 @@
 const CONFIG = {
 
   // 🔗 GOOGLE SHEETS CSV URL
-  GOOGLE_SHEET_CSV_URL: "",
+  GOOGLE_SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTG_z9yrnCzjeMgqlZBt7BNaGRPXf5MxnaE5_SL_HYk9wz6lGU3Fs3tJWK3vTUlWMLTyZK2U228OuI/pub?gid=2019630569&single=true&output=csv",
 
   // ─────────────────────────────────────────────
   // 🏢 YOUR COMPANY  (must match the company name in the sheet exactly)
@@ -18,17 +18,17 @@ const CONFIG = {
 
   // ─────────────────────────────────────────────
   // 📊 DASHBOARD TITLE & SUBTITLE
-  DASHBOARD_TITLE:    "🏗️ Prime Land — Competitor Analysis",
-  DASHBOARD_SUBTITLE: "Sri Lanka Land Market Intelligence Dashboard",
+  DASHBOARD_TITLE:    "Land — Competitor Analysis",
+  DASHBOARD_SUBTITLE: "Land Market Dashboard",
 
   // 📅 DATE LABEL shown in the top-right corner
-  DATA_DATE: "📅 Data: 2026",
+  DATA_DATE: "📅 Data: 2026 April",
 
   // 🔄 AUTO REFRESH minutes (0 = off)
-  AUTO_REFRESH_MINUTES: 10,
+  AUTO_REFRESH_MINUTES: 1,
 
   // 📊 CHART SIZE
-  TOP_COMPANIES_COUNT: 12,
+  TOP_COMPANIES_COUNT: 15,
   TOP_LOCATIONS_COUNT: 15,
 
   // ─────────────────────────────────────────────
@@ -52,13 +52,13 @@ const CONFIG = {
   //    Write here the EXACT header name from your sheet.
   CSV_HEADER_MAP: {
     company:     "Company Name",   // ← change to your column header
-    year:        "Year",
+    year:        "Company Start Year",
     location:    "Location",
-    price:       "Price",
+    price:       "Price Rs.(LKR)",
     status:      "Status",
     totalBlocks: "Total Blocks",
     available:   "Available",
-    plotSize:    "Plot Size",
+    plotSize:    "Extent singlePlot",
     projectName: "Project Name"
   }
 };
