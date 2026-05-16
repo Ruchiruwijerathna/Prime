@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sri Lanka Land Market — Competitor Analysis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+     LOADING OVERLAY
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">LOADING DASHBOARD...</div>
+</div>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+     HEADER
+     Title/subtitle → config.js DASHBOARD_TITLE / DASHBOARD_SUBTITLE
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<header class="header">
+  <div>
+    <h1 id="hTitle">Loading...</h1>
+    <div class="sub" id="hSub"></div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="val" id="hCompanies">—</div><div class="lbl">Companies</div></div>
+    <div class="hstat"><div class="val" id="hProjects">—</div><div class="lbl">Projects</div></div>
+    <div class="date-badge" id="hDate">📅 ...</div>
+  </div>
+</header>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+     STATUS BAR + REFRESH BUTTON
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<div class="status-bar">
+  <span class="status-dot"></span>
+  <span id="dataSource" class="source-label">Initialising...</span>
+  <button class="refresh-btn" onclick="loadAndRender()">⟳ Refresh Data</button>
+</div>
+
+<div class="grid">
+
+  <!-- ═══════════════════════════════════════
+       KPI CARDS  — 4 summary boxes
+  ═══════════════════════════════════════ -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-lbl">Companies Tracked</div>
+      <div class="kpi-val" id="kpi1">—</div>
+      <div class="kpi-sub" id="kpi1s"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Total Projects</div>
+      <div class="kpi-val" id="kpi2">—</div>
+      <div class="kpi-sub" id="kpi2s"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Locations</div>
+      <div class="kpi-val" id="kpi3">—</div>
+      <div class="kpi-sub" id="kpi3s"></div>
+    </div>
+    <div class="kpi-card kpi-fb">
+      <div class="kpi-lbl">FB Active Listings</div>
+      <div class="kpi-val" id="kpi4">—</div>
+      <div class="kpi-sub" id="kpi4s"></div>
+    </div>
+  </div>
+
+  <div class="section-label">📊 Company Intelligence</div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 1 — BUBBLE: Company Market Presence
+       X = Years in business
+       Y = Project count
+       Bubble size = total number of projects
+  ═══════════════════════════════════════ -->
+  <div class="card span-8">
+    <div class="card-title"><span>🫧</span> Company Market Presence</div>
+    <div class="card-sub">Years in market vs. project count — bubble size = total number of projects</div>
+    <div class="ch ch-480"><canvas id="bubbleChart"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 2 — TIMELINE: Years in Business
+  ═══════════════════════════════════════ -->
+  <div class="card span-4">
+    <div class="card-title"><span>⏳</span> Company Establishment Timeline</div>
+    <div class="card-sub">Years each company has been operating</div>
+    <div class="ch ch-480"><canvas id="ageChart"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 3 — STACKED BAR: Status by Company
+       Colours: Available=green, Sold Out=red,
+       Trending=orange, Featured=purple, etc.
+  ═══════════════════════════════════════ -->
+  <div class="card span-12">
+    <div class="card-title"><span>📋</span> Project Status Breakdown by Company</div>
+    <div class="card-sub">Available / Sold Out / Trending / Featured / Other per company</div>
+    <div class="status-legend" id="statusLegend"></div>
+    <div class="ch ch-400"><canvas id="stackedBar"></canvas></div>
+  </div>
+
+  <div class="section-label">📍 Location &amp; Pricing Intelligence</div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 4 — BAR: Top Locations
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>📍</span> Top Locations by Project Count</div>
+    <div class="card-sub">Most active areas across all companies</div>
+    <div class="ch ch-480"><canvas id="locationBar"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 5 — BAR: Avg Price by Location
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>💰</span> Average Price / Perch by Location</div>
+    <div class="card-sub">Locations with sufficient pricing data (LKR per perch)</div>
+    <div class="ch ch-480"><canvas id="locationPriceBar"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 6 — BAR: Plot Size Distribution
+       Bar = project count per size bucket
+       Buckets defined in config.js → PLOT_BUCKETS
+  ═══════════════════════════════════════ -->
+  <div class="card span-12">
+    <div class="card-title"><span>📐</span> Plot Size Analysis (Perches)</div>
+    <div class="card-sub">Project count per plot size — identify the most common land configurations in the market</div>
+    <div class="ch ch-300"><canvas id="plotSizeBar"></canvas></div>
+    <div class="insight">
+      <h4>💡 Plot Size Insight</h4>
+      <p id="plotInsight">Calculating...</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       FACEBOOK ADS SECTION
+       Data source: Facebook Ads Excel / Google Sheet
+  ═══════════════════════════════════════ -->
+  <div class="section-label fb-section">📘 Facebook Active Market Intelligence</div>
+
+  <!-- TABLE A — FB Active Lands with Location & Price -->
+  <div class="card span-6">
+    <div class="card-title fb-title"><span>📌</span> Available Active Lands</div>
+    <div class="card-sub">Live Facebook ad listings — location and advertised price per perch</div>
+    <div class="fb-source-tag">📘 Facebook Ads Data · Active 2026 Listings</div>
+    <div class="tbl-wrap">
+      <table class="fb-tbl">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Price / Perch</th>
+            <th>Ad Date</th>
+          </tr>
+        </thead>
+        <tbody id="fbLandsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TABLE B — FB Investment Opportunities -->
+  <div class="card span-6">
+    <div class="card-title fb-title"><span>🎯</span> Available Projects — Investment Opportunities</div>
+    <div class="card-sub">Facebook-advertised active projects ranked by price per perch</div>
+    <div class="fb-source-tag">📘 Facebook Ads Data · Active 2026 Listings</div>
+    <div class="tbl-wrap">
+      <table class="fb-tbl">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Price / Perch</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody id="fbOppsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       EXECUTIVE SUMMARY — 6 INSIGHT BOXES
+       ──────────────────────────────────────
+       ✏️ TO EDIT THESE TEXT BOXES:
+       Open  config.js  on GitHub
+       Find  INSIGHTS: [  ...  ]
+       Edit the "title" and "text" for each box
+       Save → dashboard updates in 60 seconds
+  ═══════════════════════════════════════ -->
+  <div class="card span-12">
+    <div class="card-title"><span>📝</span> Executive Summary &amp; Strategic Insights
+      <span style="font-size:0.7em;color:var(--text-secondary);font-weight:400;letter-spacing:0;text-transform:none;margin-left:8px">
+        (edit text in config.js → INSIGHTS array)
+      </span>
+    </div>
+    <div class="summary-grid" id="insightGrid">
+      <!-- Populated from CONFIG.INSIGHTS in config.js -->
+    </div>
+  </div>
+
+</div><!-- /grid -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   COLOUR PALETTE
+═══════════════════════════════════════════════════════════ */
+const C = {
+  gold:'#d4a574', goldLight:'#e8c9a0',
+  blue:'#4a90d9', green:'#2ecc71', red:'#e74c3c',
+  purple:'#9b59b6', cyan:'#00bcd4', orange:'#f39c12',
+  text:'#a0a0b0', border:'rgba(42,42,74,0.5)'
+};
+const MULTI = [
+  C.blue,C.green,C.purple,C.cyan,C.orange,C.red,
+  '#52be80','#3498db','#8e44ad','#1abc9c','#e67e22','#c0392b',
+  '#27ae60','#2980b9','#d35400','#16a085'
+];
+
+Chart.defaults.color       = C.text;
+Chart.defaults.borderColor = C.border;
+Chart.defaults.font.family = "'Nunito', sans-serif";
+
+
+/* ═══════════════════════════════════════════════════════════
+   PRICE PARSER
+═══════════════════════════════════════════════════════════ */
+function cleanPrice(raw) {
+  if (raw === null || raw === undefined) return null;
+  const s = String(raw).trim();
+  if (!s || s === 'nan' || s === 'None' || s === 'N/A') return null;
+
+  const minP = (CONFIG.MIN_VALID_PRICE) || 50000;
+  const maxP = (CONFIG.MAX_VALID_PRICE) || 15000000;
+
+  const parts = s.split(/\s*[_\u2013\u2014]\s*/);
+  const nums = [];
+
+  for (const p of parts) {
+    const digits = p.replace(/[^\d]/g, '');
+    if (!digits || digits.length < 4) continue;
+    const n = parseInt(digits, 10);
+    if (n >= minP && n <= maxP) nums.push(n);
+  }
+
+  if (!nums.length) return null;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GENERIC NUMBER PARSER
+═══════════════════════════════════════════════════════════ */
+function cleanNum(raw) {
+  if (raw === null || raw === undefined) return null;
+  const digits = String(raw).replace(/[^\d.]/g, '').trim();
+  const n = parseFloat(digits);
+  return isNaN(n) ? null : n;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS NORMALISER
+═══════════════════════════════════════════════════════════ */
+function normStatus(s) {
+  s = String(s || '').trim().toLowerCase();
+  if (['available','avalibale','avalable','for sale'].includes(s)) return 'Available';
+  if (['sold out','sold out ','sold','almost sold','soldout'].includes(s))   return 'Sold Out';
+  if (s === 'trending')  return 'Trending';
+  if (s === 'featured')  return 'Featured';
+  if (['coming soon','up coming','upcoming'].includes(s)) return 'Coming Soon';
+  if (['ongoing','new','ongoing projects'].includes(s))   return 'Ongoing';
+  return 'Other';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   YEAR PARSER
+═══════════════════════════════════════════════════════════ */
+function parseYear(v) {
+  const m = String(v || '').match(/20\d\d|19\d\d/);
+  return m ? parseInt(m[0]) : null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REGION CLASSIFIER
+═══════════════════════════════════════════════════════════ */
+function getRegion(loc) {
+  const l = (loc || '').toLowerCase();
+  const urban    = CONFIG.URBAN_AREAS    || [];
+  const labels   = CONFIG.REGION_LABELS  || ['Urban','Suburban','Rural'];
+  if (urban.some(a => l.includes(a.toLowerCase()))) return labels[0];
+  return labels[2];
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORMAT PRICE FOR DISPLAY
+═══════════════════════════════════════════════════════════ */
+function fmtPrice(v) {
+  if (!v || v <= 0) return 'N/A';
+  if (v >= 1000000) return 'Rs.\u00a0' + (v / 1000000).toFixed(1) + 'M';
+  if (v >= 1000)    return 'Rs.\u00a0' + Math.round(v / 1000) + 'K';
+  return 'Rs.\u00a0' + Math.round(v).toLocaleString();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORMAT DATE
+═══════════════════════════════════════════════════════════ */
+function fmtDate(d) {
+  if (!d) return '—';
+  try {
+    const dt = new Date(d);
+    if (isNaN(dt)) return d;
+    return dt.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  } catch(e) { return d; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRICE CATEGORY (for FB table)
+═══════════════════════════════════════════════════════════ */
+function priceCategory(px) {
+  if (!px) return '<span class="badge b-other">N/A</span>';
+  if (px >= 1000000) return '<span class="badge b-featured">Premium 1M+</span>';
+  if (px >= 500000)  return '<span class="badge b-trending">Mid-High</span>';
+  if (px >= 200000)  return '<span class="badge b-available">Affordable</span>';
+  return '<span class="badge b-ongoing">Budget</span>';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV PARSER — Main data Google Sheets
+═══════════════════════════════════════════════════════════ */
+function parseCSV(csvText) {
+  const result = Papa.parse(csvText, { header:false, skipEmptyLines:true });
+  const rows   = result.data;
+  if (rows.length < 2) return [];
+
+  const data  = [];
+  let lastCo  = '', lastYr = null;
+
+  for (let i = 1; i < rows.length; i++) {
+    const r  = rows[i];
+    const co = (r[5] || '').trim();
+    if (co) { lastCo = co; lastYr = parseYear(r[0]); }
+    const loc = (r[7] || '').trim();
+    if (!loc) continue;
+
+    data.push({
+      co:  lastCo,
+      yr:  lastYr,
+      loc: loc,
+      px:  cleanPrice(r[8]),
+      st:  normStatus(r[9]),
+      tb:  cleanNum(r[10]),
+      av:  cleanNum(r[11]),
+      ep:  cleanNum(r[12]),
+      pn:  (r[6] || '').trim() || null,
+    });
+  }
+  return data;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV PARSER — Facebook Ads Google Sheets
+   Columns: Company, Location, Price, Published Date
+═══════════════════════════════════════════════════════════ */
+function parseFBCSV(csvText) {
+  const result = Papa.parse(csvText, { header:true, skipEmptyLines:true });
+  const records = [];
+  let lastCo = '';
+
+  for (const r of result.data) {
+    const co  = (r['Company'] || r['company'] || '').trim();
+    if (co) lastCo = co;
+    const loc = (r['Location'] || r['location'] || '').trim();
+    if (!loc) continue;
+
+    records.push({
+      co:   lastCo,
+      loc:  loc,
+      px:   cleanPrice(r['Price'] || r['price']),
+      date: (r['Published Date'] || r['published_date'] || '').trim()
+    });
+  }
+  return records.filter(r => r.loc && r.loc !== 'nan');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHART REGISTRY
+═══════════════════════════════════════════════════════════ */
+const charts = {};
+function mkChart(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
+}
+const trunc = (s, n) => (!s || s.length <= n) ? (s||'') : s.substring(0, n) + '…';
+const myColor = (name, i) =>
+  (CONFIG.YOUR_COMPANY && name === CONFIG.YOUR_COMPANY) ? C.gold : MULTI[i % MULTI.length];
+
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER FACEBOOK TABLES
+═══════════════════════════════════════════════════════════ */
+function renderFBTables(fbData) {
+  // Update KPI 4
+  const fbWithPrice = fbData.filter(r => r.px !== null);
+  document.getElementById('kpi4').textContent  = fbData.length;
+  document.getElementById('kpi4s').textContent = fbWithPrice.length + ' with price data';
+
+  // TABLE A — Active Lands (all, sorted by date desc)
+  const sorted = [...fbData].sort((a,b) => {
+    const da = a.date ? new Date(a.date) : new Date(0);
+    const db = b.date ? new Date(b.date) : new Date(0);
+    return db - da;
+  });
+
+  document.getElementById('fbLandsBody').innerHTML = sorted.map(r => `
+    <tr>
+      <td><strong>${r.co || '—'}</strong></td>
+      <td>${r.loc}</td>
+      <td>${r.px ? fmtPrice(r.px) : '<span style="color:var(--text-secondary)">—</span>'}</td>
+      <td style="font-size:0.82em;color:var(--text-secondary)">${fmtDate(r.date)}</td>
+    </tr>`).join('');
+
+  // TABLE B — Investment Opportunities (with price, sorted high→low)
+  const withPrice = fbData
+    .filter(r => r.px !== null)
+    .sort((a,b) => b.px - a.px);
+
+  document.getElementById('fbOppsBody').innerHTML = withPrice.map((r, i) => `
+    <tr>
+      <td style="color:var(--text-secondary);font-weight:700">${i+1}</td>
+      <td><strong>${r.co || '—'}</strong></td>
+      <td>${r.loc}</td>
+      <td><strong>${fmtPrice(r.px)}</strong></td>
+      <td>${priceCategory(r.px)}</td>
+    </tr>`).join('');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN RENDER  (main data)
+═══════════════════════════════════════════════════════════ */
+function renderDashboard(data) {
+  const CFG = CONFIG || {};
+
+  // Apply header
+  document.getElementById('hTitle').textContent = CFG.DASHBOARD_TITLE    || 'Land Market Dashboard';
+  document.getElementById('hSub').textContent   = CFG.DASHBOARD_SUBTITLE || '';
+  document.getElementById('hDate').textContent  = CFG.DATA_DATE          || '📅 2026';
+
+  // ── Aggregate companies ──
+  const companies = {};
+  data.forEach(r => {
+    if (!companies[r.co]) companies[r.co] = { name:r.co, yr:r.yr, projects:0, blocks:0, statuses:{} };
+    const c = companies[r.co];
+    c.projects++;
+    if (r.tb) c.blocks += r.tb;
+    c.statuses[r.st] = (c.statuses[r.st] || 0) + 1;
+    if (!c.yr && r.yr) c.yr = r.yr;
+  });
+  const coList = Object.values(companies).sort((a, b) => b.projects - a.projects);
+
+  // ── KPIs ──
+  const totalPr = data.length;
+  const locs    = new Set(data.map(r => r.loc));
+
+  document.getElementById('hCompanies').textContent = coList.length;
+  document.getElementById('hProjects').textContent  = totalPr.toLocaleString();
+
+  document.getElementById('kpi1').textContent  = coList.length;
+  document.getElementById('kpi1s').textContent = 'Active Market Players';
+  document.getElementById('kpi2').textContent  = totalPr.toLocaleString();
+  document.getElementById('kpi2s').textContent = 'All Project Statuses';
+  document.getElementById('kpi3').textContent  = locs.size;
+  document.getElementById('kpi3s').textContent = 'Districts & Areas Covered';
+  // kpi4 filled by renderFBTables
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 1 — BUBBLE: Company Market Presence
+     Bubble size = total number of projects (not blocks)
+  ───────────────────────────────────────────────────────── */
+  const top10       = coList.slice(0, 10);
+  const maxProjects = Math.max(...top10.map(c => c.projects), 1);
+  mkChart('bubbleChart', {
+    type: 'bubble',
+    data: { datasets: top10.map((c, i) => ({
+      label: c.name,
+      data: [{ x: c.yr ? (CFG.CURRENT_YEAR||2026) - c.yr : 5,
+               y: c.projects,
+               r: Math.max(8, Math.round((c.projects / maxProjects) * 45)) }],
+      backgroundColor: myColor(c.name, i) + 'bb',
+      borderColor:     myColor(c.name, i),
+      borderWidth: (CFG.YOUR_COMPANY && c.name === CFG.YOUR_COMPANY) ? 3 : 1.5,
+    }))},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'bottom', labels:{ usePointStyle:true, padding:10, font:{size:10} } },
+        tooltip: { callbacks: { label: ctx => {
+          const c = top10[ctx.datasetIndex];
+          return [`${c.name}`,
+            `Years in Market: ${c.yr ? (CFG.CURRENT_YEAR||2026)-c.yr : '?'}`,
+            `Total Projects: ${c.projects}`];
+        }}}
+      },
+      scales: {
+        x: { title:{ display:true, text:'Years in Business', color:C.gold }, grid:{ color:C.border } },
+        y: { title:{ display:true, text:'Number of Projects', color:C.gold }, grid:{ color:C.border } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 2 — TIMELINE: Years Each Company Has Operated
+  ───────────────────────────────────────────────────────── */
+  const coWithYr = coList.filter(c => c.yr).sort((a,b) => a.yr-b.yr).slice(0, 16);
+  mkChart('ageChart', {
+    type: 'bar',
+    data: {
+      labels: coWithYr.map(c => trunc(c.name, 14)),
+      datasets: [{ label:'Years',
+        data:  coWithYr.map(c => (CFG.CURRENT_YEAR||2026) - c.yr),
+        backgroundColor: coWithYr.map((c,i) => myColor(c.name,i)+'88'),
+        borderColor:     coWithYr.map((c,i) => myColor(c.name,i)),
+        borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx =>
+          `${ctx.raw} years (founded ${coWithYr[ctx.dataIndex].yr})` }}},
+      scales: {
+        x: { title:{ display:true, text:'Years', color:C.gold }, grid:{ color:C.border } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 3 — STACKED BAR: Status Breakdown by Company
+  ───────────────────────────────────────────────────────── */
+  const statusKeys = ['Available','Sold Out','Trending','Featured','Coming Soon','Ongoing'];
+  const statusCols = [C.green,C.red,C.orange,C.purple,C.cyan,C.blue];
+  const stackCo    = coList.slice(0, CFG.TOP_COMPANIES_COUNT || 20);
+  mkChart('stackedBar', {
+    type: 'bar',
+    data: {
+      labels: stackCo.map(c => trunc(c.name, 14)),
+      datasets: statusKeys.map((s,i) => ({
+        label: s,
+        data:  stackCo.map(c => c.statuses[s] || 0),
+        backgroundColor: statusCols[i]+'99',
+        borderColor: statusCols[i], borderWidth:1, borderRadius:2
+      }))
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:9}, padding:10 } } },
+      scales: {
+        x: { stacked:true, grid:{ color:C.border }, ticks:{ font:{size:8}, maxRotation:45 } },
+        y: { stacked:true, title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } }
+      }
+    }
+  });
+  document.getElementById('statusLegend').innerHTML =
+    statusKeys.map((s,i) =>
+      `<span class="leg-item"><span class="leg-dot" style="background:${statusCols[i]}"></span>${s}</span>`
+    ).join('');
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 4 — BAR: Top Locations by Project Count
+  ───────────────────────────────────────────────────────── */
+  const locCount = {};
+  data.forEach(r => { locCount[r.loc] = (locCount[r.loc]||0)+1; });
+  const topLocs = Object.entries(locCount).sort((a,b)=>b[1]-a[1])
+                         .slice(0, CFG.TOP_LOCATIONS_COUNT||20);
+  mkChart('locationBar', {
+    type: 'bar',
+    data: {
+      labels: topLocs.map(([l])=>l),
+      datasets: [{ label:'Projects', data:topLocs.map(([,n])=>n),
+        backgroundColor:C.purple+'88', borderColor:C.purple, borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 5 — BAR: Avg Price / Perch by Location
+  ───────────────────────────────────────────────────────── */
+  const locPrices = {};
+  data.forEach(r => {
+    if (r.px !== null && r.px > 0) {
+      if (!locPrices[r.loc]) locPrices[r.loc] = [];
+      locPrices[r.loc].push(r.px);
+    }
+  });
+  const locAvg = Object.entries(locPrices)
+    .filter(([,a]) => a.length >= 2)
+    .map(([l,a]) => [l, Math.round(a.reduce((x,y)=>x+y,0)/a.length)])
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0, CFG.TOP_PRICE_LOCATIONS_COUNT||20);
+  mkChart('locationPriceBar', {
+    type: 'bar',
+    data: {
+      labels: locAvg.map(([l])=>l),
+      datasets: [{ label:'Avg Price', data:locAvg.map(([,p])=>p),
+        backgroundColor:C.orange+'88', borderColor:C.orange, borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx=>`${fmtPrice(ctx.raw)} per perch` }}},
+      scales: {
+        x: { title:{ display:true, text:'LKR per Perch', color:C.gold }, grid:{ color:C.border },
+             ticks:{ callback: v => fmtPrice(v) } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 6 — BAR: Plot Size Distribution (no price line)
+  ───────────────────────────────────────────────────────── */
+  const rawBuckets = (CFG.PLOT_BUCKETS && CFG.PLOT_BUCKETS.length)
+    ? CFG.PLOT_BUCKETS
+    : [
+        { label:'6–8',   max:8    },
+        { label:'9–11',  max:11   },
+        { label:'12–15', max:15   },
+        { label:'16–20', max:20   },
+        { label:'20+',   max:9999 },
+      ];
+
+  const buckets = rawBuckets.map(b => ({ ...b, count:0, avail:[] }));
+  data.forEach(r => {
+    if (!r.ep || r.ep <= 0) return;
+    const bucket = buckets.find(b => r.ep <= b.max);
+    if (!bucket) return;
+    bucket.count++;
+    if (r.av !== null && r.av > 0) bucket.avail.push(r.av);
+  });
+
+  const bucketAvgAvail = buckets.map(b =>
+    b.avail.length  ? Math.round(b.avail.reduce((a,c)=>a+c,0)/b.avail.length) : 0);
+
+  mkChart('plotSizeBar', {
+    type: 'bar',
+    data: {
+      labels: buckets.map(b => b.label + '\nperches'),
+      datasets: [
+        { label:'Number of Projects', data:buckets.map(b=>b.count),
+          backgroundColor:C.cyan+'88', borderColor:C.cyan, borderWidth:1, borderRadius:6 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:10} } },
+        tooltip: { callbacks: { label: ctx => [
+          `Projects: ${ctx.raw}`,
+          `Avg available plots: ${bucketAvgAvail[ctx.dataIndex]}`,
+        ]}}
+      },
+      scales: {
+        x:  { grid:{ color:C.border }, ticks:{ font:{ size:10 } } },
+        y:  { title:{ display:true, text:'Number of Projects', color:C.cyan },
+              grid:{ color:C.border }, beginAtZero:true },
+      }
+    }
+  });
+
+  // Plot insight
+  const bucketsWithData = buckets.filter(b => b.count >= 3);
+  if (bucketsWithData.length > 0) {
+    const most = bucketsWithData.reduce((a,b) => a.count >= b.count ? a : b);
+    document.getElementById('plotInsight').textContent =
+      `${most.label} perch plots are the most widely offered (${most.count} projects). ` +
+      `This size bracket has the highest market competition and buyer familiarity. ` +
+      `Consider differentiation in under-served size bands for strategic positioning.`;
+  }
+
+
+  /* ─────────────────────────────────────────────────────────
+     EXECUTIVE SUMMARY INSIGHT BOXES
+  ───────────────────────────────────────────────────────── */
+  const top3co = coList.slice(0, 3)
+    .map(c => `${c.name} (${c.projects} projects)`).join(', ');
+  const autoText = `Top competitors: ${top3co}. Monitor their pricing and new location launches closely.`;
+
+  const fallbackInsights = [
+    { icon:'🔴', title:'Market Saturation Zones',
+      text:'Homagama, Athurugiriya, and Piliyandala show the highest project density.' },
+    { icon:'🟡', title:'Growth Opportunities',
+      text:'Kurunegala, Tangalle, and Matara show less competition with growing demand.' },
+    { icon:'🟢', title:'Pricing Strategy',
+      text:'Rs. 200,000–500,000/perch shows the highest absorption rate.' },
+    { icon:'📊', title:'Project Scale Sweet Spot',
+      text:'20–60 block projects show fastest sell-through.' },
+    { icon:'🏗️', title:'Plot Size Preference',
+      text:'9–11 perch plots dominate. 6–8 trending in urban areas.' },
+    { icon:'⚡', title:'Top Competitive Threats', text:'{AUTO}' },
+  ];
+
+  const insightItems = (CFG.INSIGHTS && CFG.INSIGHTS.length)
+    ? CFG.INSIGHTS : fallbackInsights;
+
+  document.getElementById('insightGrid').innerHTML = insightItems.map(item => `
+    <div class="insight">
+      <h4>${item.icon || ''} ${item.title || ''}</h4>
+      <p>${(item.text || '') === '{AUTO}' ? autoText : (item.text || '')}</p>
+    </div>`).join('');
+
+  // Hide loader
+  document.getElementById('loader').style.display = 'none';
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   FACEBOOK DATA LOADER
+═══════════════════════════════════════════════════════════ */
+async function loadFBData() {
+  const fbUrl = (CONFIG.FACEBOOK_SHEET_CSV_URL || '').trim();
+  if (fbUrl.length > 10) {
+    try {
+      const resp = await fetch(fbUrl);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const csv  = await resp.text();
+      const data = parseFBCSV(csv);
+      if (data.length > 0) {
+        renderFBTables(data);
+        return;
+      }
+    } catch(e) {
+      console.warn('FB Sheets failed:', e.message);
+    }
+  }
+  // Fallback to fb_data.json
+  try {
+    const resp = await fetch('fb_data.json');
+    const data = await resp.json();
+    renderFBTables(data);
+  } catch(e) {
+    document.getElementById('kpi4').textContent  = '—';
+    document.getElementById('kpi4s').textContent = 'Set FACEBOOK_SHEET_CSV_URL in config.js';
+    document.getElementById('fbLandsBody').innerHTML =
+      '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:20px">No Facebook data — add fb_data.json or set FACEBOOK_SHEET_CSV_URL in config.js</td></tr>';
+    document.getElementById('fbOppsBody').innerHTML =
+      '<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);padding:20px">No Facebook data available</td></tr>';
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN DATA LOADER
+   1. Try Google Sheets URL from config.js
+   2. Fall back to data.json
+═══════════════════════════════════════════════════════════ */
+async function loadAndRender() {
+  const src = document.getElementById('dataSource');
+  const url = CONFIG.GOOGLE_SHEET_CSV_URL || '';
+
+  if (url.length > 10) {
+    try {
+      src.textContent = '⏳ Fetching from Google Sheets...';
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const csv  = await resp.text();
+      const data = parseCSV(csv);
+      if (data.length < 5) throw new Error('Too few rows');
+      renderDashboard(data);
+      const priceCount = data.filter(r=>r.px!==null).length;
+      src.textContent =
+        `✅ Live · Google Sheets · Updated: ${new Date().toLocaleTimeString()} · ${data.length} projects · ${priceCount} with prices`;
+    } catch (e) {
+      console.warn('Google Sheets failed:', e.message);
+      src.textContent = `⚠️ Google Sheets error (${e.message}) — falling back to data.json`;
+      await loadJSON(src);
+    }
+  } else {
+    await loadJSON(src);
+  }
+
+  // Load Facebook data separately (always runs)
+  await loadFBData();
+}
+
+async function loadJSON(src) {
+  try {
+    const resp = await fetch('data.json');
+    const data = await resp.json();
+    renderDashboard(data);
+    const priceCount = data.filter(r=>r.px!==null).length;
+    src.textContent =
+      `📁 Offline data (data.json) · ${data.length} projects · ${priceCount} with prices · Set GOOGLE_SHEET_CSV_URL in config.js to go live`;
+  } catch(e) {
+    src.textContent = '❌ Cannot load data.json — make sure all files are uploaded to GitHub';
+    document.getElementById('loader').style.display = 'none';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+loadAndRender();
+
+const mins = CONFIG.AUTO_REFRESH_MINUTES || 0;
+if (mins > 0) setInterval(loadAndRender, mins * 60000);
+
+</script>
+</body>
+</html>
