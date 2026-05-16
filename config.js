@@ -212,7 +212,6 @@ const CONFIG = {
      ─────────────────────────────────────────────────────
      - DSD_MAP: keys are normalized DSD names (lowercase, no punctuation)
        values contain the official DSD name and its district.
-     - DSD_LIST is automatically built from DSD_MAP.
      - SYNONYMS: manually map a raw location string (as it appears in your
        data) to a canonical DSD name. This overrides automatic matching.
      - The matching order: 
@@ -224,11 +223,85 @@ const CONFIG = {
   ════════════════════════════════════════════════════════ */
 
   // Manual synonyms: raw location → official DSD name
-  // Example: "Kandy Town" : "Kandy Four Gravets & Gangawata Korale"
+  // Add any location from your data that doesn't match correctly
   SYNONYMS: {
-    // Add your own overrides here:
-    // "Malabe City" : "Malabe",
-    // "Kurunegala Central" : "Kurunegala",
+    "Athurugiriya Pangoda": "Homagama",
+    "Homagama Pitipna": "Homagama",
+    "Kadawatha Ranmuthugala": "Gampaha",
+    "Kadawatha": "Gampaha",
+    "Kandy": "Kandy Four Gravets & Gangawata Korale",
+    "Gampaha Ragama": "Gampaha",
+    "Negombo Katana": "Katana",
+    "Ja Ela": "Ja-Ela",
+    "Kirindiwela": "Minuwangoda", // approximate
+    "Meerigama": "Mirigama",
+    "Delgoda - Udupila": "Gampaha",
+    "Athurigiriya": "Homagama",
+    "Homagama Kiriwaththuduwa": "Homagama",
+    "Habarakada": "Homagama",
+    "Mathugama": "Mathugama",
+    "Kurunagala - Melsiripura": "Kurunegala",
+    "Galle - Karapitiya": "Karapitiya",
+    "Galle - Benthara": "Bentota",
+    "Homagama - Uduwana": "Homagama",
+    "Meepe": "Meepe",
+    "Moratuwa - Katubedda": "Moratuwa",
+    "Homagama - Watareka": "Homagama",
+    "Horana - Ingiriya": "Ingiriya",
+    "Homagama - Pitipana": "Homagama",
+    "Maravila": "Marawila",
+    "Kirimetiyana": "Kirimetiyana",
+    "Homagama Thalagala": "Homagama",
+    "Kesbewa - Kindelpitiya": "Kesbewa",
+    "Hoamagama - Kiriwaththuduwa": "Homagama",
+    "Gampaha - Balummahara": "Gampaha",
+    "Kadawatha - Webada": "Gampaha",
+    "Kadawatha - Trackmo Junction": "Gampaha",
+    "Negombo - Kadirana": "Negombo",
+    "Athurugiriya, Colombo": "Homagama",
+    "Gorakana": "Panadura",
+    "Hirana, Panadura": "Panadura",
+    "Panadura": "Panadura",
+    "Wadduwa": "Wadduwa",
+    "Kuruwita, Rathnapura": "Kuruvita",
+    "Gonapola Thalagala": "Horana",
+    "Deniyaya,Waralla": "Deniyaya",
+    "Tangalle,Kurudu pokuna": "Tangalle",
+    "Hokandara": "Kaduwela",
+    "Piliyandala,Polgasowita": "Polgasowita",
+    "Marawila": "Marawila",
+    "GANEMULLA": "Ganemulla",
+    "Ingiriya": "Ingiriya",
+    "Pasyala": "Pasyala",
+    "Matara,Kakanadura": "Matara",
+    "Mahabage": "Mahabage",
+    "Gampaha,Yakkala": "Yakkala",
+    "Pothuhera": "Pothuhera",
+    "Kesbewa, Polgasowita": "Polgasowita",
+    "Homagama, Pitipana": "Homagama",
+    "Nittambuwa": "Nittambuwa",
+    "Kottawa": "Kottawa",
+    "Pitipana, Homagama": "Homagama",
+    "Pannala": "Pannala",
+    "Matale,Ibuldeniya": "Matale",
+    "Matale,Palapathwala": "Matale",
+    "Matale,Hulangamuwa": "Matale",
+    "Katunayake,Minuwangoda": "Minuwangoda",
+    "Kurunegala,Uhumeeya": "Kurunegala",
+    "Alawwa": "Alawwa",
+    "Ragama,Batuwaththa": "Ragama",
+    "Thalgodapitiya,Ibbagamuwa": "Ibbagamuwa",
+    "Kurunegala,kiriwawula": "Kurunegala",
+    "Yakkala,Gampaha": "Yakkala",
+    "Rekawa": "Rekawa",
+    "Beliaththa": "Beliatta",
+    "Homagama,Wataraka": "Homagama",
+    "Kalutara,Galpatha": "Kalutara",
+    "Ja-ela,Kotugoda": "Ja-Ela",
+    "Negambo,Disagewaththa": "Negombo",
+    "Negambo,Kadawala": "Negombo",
+    "Kadawatha,Udupila": "Gampaha",
+    "Weerabugedara": "Weerambugedara"
   },
 
   // DSD_MAP generated from the Excel file (190+ entries)
@@ -573,11 +646,11 @@ const CONFIG = {
     "dompe": { dsd: "Dompe", district: "Gampaha" },
     "udadumbara": { dsd: "Udadumbara", district: "Kandy" },
     "trincomalee town and gravets": { dsd: "Trincomalee Town and Gravets", district: "Trincomalee" },
-    "madulla": { dsd: "Madulla", district: "Moneragala" },
-  },
+    "madulla": { dsd: "Madulla", district: "Moneragala" }
+  }
 };
 
-// Build DSD_LIST for easy iteration
+// Build DSD_LIST for easy iteration (optional, not used in dashboard)
 CONFIG.DSD_LIST = Object.keys(CONFIG.DSD_MAP).map(key => ({
   dsd: CONFIG.DSD_MAP[key].dsd,
   district: CONFIG.DSD_MAP[key].district,
