@@ -81,7 +81,7 @@ const CONFIG = {
 
   DASHBOARD_TITLE:    "Land Market — Competitor Analysis",
   DASHBOARD_SUBTITLE: "Real Estate Land Data Dashboard · 2026",
-  DATA_DATE:          "Updated: 2026 May",
+  DATA_DATE:          "Updated: 2026 May 15",
 
 
   /* ════════════════════════════════════════════════════════
@@ -178,35 +178,34 @@ const CONFIG = {
     {
       icon:  "🔴",
       title: "Market Saturation Zones",
-      text:  "Homagama, Athurugiriya, and Piliyandala show the highest project density. Differentiating through premium amenities or unique plot sizes is key to standing out.",
+      text:  "Kadawatha (9 active ads), Homagama (8), Panadura (5), and Piliyandala (4) show the highest confirmed competitor activity based on live Facebook ads — the most reliable current signal. These zones have multiple companies advertising simultaneously. Entry now requires clear price or product differentiation to stand out.",
     },
     {
-      icon:  "🟡",
-      title: "Growth Opportunities",
-      text:  "Emerging corridors — Kurunegala, Tangalle, and Matara — show less competition with growing demand. First-mover advantage is available in these areas.",
+      icon:  "⚠️",
+      title: "Premium Urban Gap",
+      text:  "Malabe, Hokandara, Gampaha town, and Piliyandala have active competitor ads at Rs. 950K–Rs. 1.95M per perch. Prime Lands holds one Malabe listing but shows no price — making it invisible to price-comparing buyers. Empire Lands and Ground Worth are establishing premium brand presence in this corridor. This gap narrows each month.",
     },
     {
       icon:  "🟢",
-      title: "Pricing Strategy",
-      text:  "The Rs. 200,000–500,000/perch band shows the highest absorption rate. Premium Colombo-adjacent locations command Rs. 1M+ successfully.",
+      title: "Pricing Intelligence",
+      text:  "From 95 live Facebook priced ads: Budget below Rs. 400K accounts for 53% of active market volume. Mid-range Rs. 400K–900K holds 29%. Premium Rs. 900K–1.5M is 12%. Luxury above Rs. 1.5M is 6%. The mid-range band has the highest number of active competitors. Premium Colombo-adjacent locations — Malabe, Hokandara, Gampaha town — are sustaining Rs. 1M+ asks with confirmed buyer activity.",
     },
     {
-      icon:  "📊",
-      title: "Project Scale Sweet Spot",
-      text:  "Projects with 20–60 blocks show the fastest sell-through. Mega projects (100+ blocks) succeed best in emerging areas with lower per-perch pricing.",
+      icon:  "📡",
+      title: "Digital Ad Intelligence",
+      text:  "Prime Lands leads Facebook ad volume with 64 active listings — 40% of all active land ads in Sri Lanka. However, 73% of Prime Lands ads show no price versus Home Lands at 97% price transparency. Withholding price drives inquiry volume but reduces lead pre-qualification. Home Lands (32 ads, 97% transparent) and winroseproperty (13 ads, 85% transparent) are building stronger digital buyer trust through pricing clarity.",
     },
     {
       icon:  "🏗️",
       title: "Plot Size Preference",
-      text:  "10-perch plots dominate the market. 6-perch plots are trending in urban areas. 12–15 perch is preferred in suburban and rural markets.",
+      text:  "9–11 perch plots represent the largest share of published market projects and have the highest buyer familiarity. 6–8 perch plots are gaining share in dense urban Colombo and Gampaha zones driven by affordability pressure. 12–15 perch is the preferred format in suburban and semi-rural locations where land cost per perch is lower. Any new project launch should be sized to match the location's buyer profile.",
     },
     {
       icon:  "⚡",
       title: "Top Competitive Threats",
-      text:  "{AUTO}",   // ← keep as {AUTO} — filled automatically from data
+      text:  "{AUTO}",
     },
   ],
-
   /* ════════════════════════════════════════════════════════
      🗺️  DSD / LOCATION MATCHING (NEW)
      ─────────────────────────────────────────────────────
