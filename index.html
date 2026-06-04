@@ -1,385 +1,60 @@
+@@ -1,248 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sri Lanka Land Market — Competitor Analysis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sri Lanka Land Market — Competitor Analysis</title>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-    <style>
-        /* ================================================================
-           MODERN LIGHT GLASSMORPHISM THEME
-        ================================================================ */
-        :root {
-            --bg-base:       #f8fafc; /* Very light slate background fallback */
-            --bg-card:       rgba(255, 255, 255, 0.75);
-            --bg-header:     rgba(255, 255, 255, 0.85);
-            --border:        rgba(255, 255, 255, 0.6);
-            --border-dark:   rgba(0, 0, 0, 0.06);
-            
-            --text-primary:  #0f172a; /* Slate 900 */
-            --text-secondary:#475569; /* Slate 600 */
-            --text-muted:    #94a3b8; /* Slate 400 */
-            
-            /* Vibrant Modern Accents */
-            --accent-main:   #4f46e5; /* Indigo */
-            --accent-grad:   linear-gradient(135deg, #4f46e5, #9333ea);
-            
-            --gold:          #d97706;
-            --blue:          #2563eb;
-            --green:         #059669;
-            --red:           #dc2626;
-            --purple:        #7c3aed;
-            --cyan:          #0891b2;
-            --orange:        #ea580c;
-            
-            --radius:        20px;
-            --shadow:        0 10px 40px -10px rgba(0, 0, 0, 0.08);
-            --shadow-hover:  0 20px 40px -10px rgba(0, 0, 0, 0.12);
-        }
-
-        * { margin:0; padding:0; box-sizing:border-box; }
-
-        body {
-            background-color: var(--bg-base);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            line-height: 1.6;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ── AURORA BACKGROUND CANVAS ── */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -2;
-            filter: blur(80px); /* Creates the soft Aurora mesh look */
-            opacity: 0.85;
-            pointer-events: none;
-        }
-
-        #cursor-glow {
-            position: fixed;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: -1;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 60%);
-            transform: translate(-50%, -50%);
-            transition: opacity 0.4s ease;
-            opacity: 0;
-            will-change: transform;
-            mix-blend-mode: overlay;
-        }
-
-        /* ── HEADER ── */
-        .header {
-            background: var(--bg-header);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-bottom: 1px solid var(--border-dark);
-            padding: 20px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 200;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        }
-        .header h1 {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.6em;
-            font-weight: 800;
-            background: var(--accent-grad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.5px;
-        }
-        .header .sub {
-            color: var(--text-secondary);
-            font-size: 0.85em;
-            font-weight: 500;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-        .header-stats { display:flex; gap:28px; align-items:center; }
-        .hstat .val { font-family:'Inter',sans-serif; font-size:1.6em; font-weight:800; color:var(--text-primary); }
-        .hstat .lbl { font-size:0.75em; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; font-weight:600;}
-        .date-badge { 
-            background: var(--accent-grad); 
-            color: #fff; 
-            padding: 8px 16px; 
-            border-radius: 30px; 
-            font-weight: 600; 
-            font-size: 0.85em; 
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-        }
-
-        /* ── STATUS BAR ── */
-        .status-bar {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(12px);
-            padding: 10px 32px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.85em;
-            border-bottom: 1px solid var(--border-dark);
-        }
-        .status-dot { width:10px; height:10px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; flex-shrink:0; box-shadow: 0 0 8px var(--green);}
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        .source-label { color:var(--text-secondary); font-weight: 500;}
-        .refresh-btn {
-            margin-left: auto;
-            background: #fff;
-            border: 1px solid var(--border-dark);
-            color: var(--text-primary);
-            padding: 6px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 600;
-            transition: all .2s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-        }
-        .refresh-btn:hover { background: var(--bg-base); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.08);}
-
-        /* ── GRID ── */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 24px;
-            padding: 24px;
-            max-width: 1900px;
-            margin: 0 auto;
-        }
-        .span-12 { grid-column: span 12; }
-        .span-8  { grid-column: span 8;  }
-        .span-6  { grid-column: span 6;  }
-        .span-4  { grid-column: span 4;  }
-        .span-3  { grid-column: span 3;  }
-
-        /* ── ANIMATIONS ── */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ── KPI ROW ── */
-        .kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; grid-column:span 12; }
-        
-        .kpi-card, .card {
-            background: var(--bg-card);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-        .kpi-card { text-align: center; }
-
-        .kpi-card:hover, .card:hover { 
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-hover);
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .kpi-val {
-            font-family: 'Inter', sans-serif;
-            font-size: 3em;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin: 4px 0;
-            line-height: 1.1;
-        }
-        .kpi-lbl { color:var(--text-secondary); text-transform:uppercase; letter-spacing:1.5px; font-size:0.8em; font-weight:600;}
-        .kpi-sub { font-size:0.85em; margin-top:8px; color:var(--accent-main); font-weight:500;}
-
-        /* KPI Facebook accent */
-        .kpi-card.kpi-fb .kpi-val {
-            background: linear-gradient(135deg, var(--blue), var(--cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* ── CARD ELEMENTS ── */
-        .card-title {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.1em;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .card-title span { font-size: 1.2em; }
-        .card-title.fb-title { color: var(--blue); }
-        
-        .card-sub { font-size:0.85em; color:var(--text-secondary); margin-bottom:20px; font-weight:400; }
-
-        .ch { position:relative; width:100%; }
-        .ch-400 { height:400px; }
-        .ch-480 { height:480px; }
-        .ch-300 { height:300px; }
-        canvas { width:100%!important; height:100%!important; }
-
-        /* ── TABLES ── */
-        .tbl-wrap { max-height:420px; overflow-y:auto; border-radius: 12px; }
-        .tbl-wrap::-webkit-scrollbar { width:6px; }
-        .tbl-wrap::-webkit-scrollbar-track { background: transparent; }
-        .tbl-wrap::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius:10px; }
-        
-        table { width:100%; border-collapse:separate; border-spacing: 0; font-size:0.85em; }
-        table th {
-            background: rgba(248, 250, 252, 0.95); 
-            backdrop-filter: blur(8px);
-            color: var(--text-secondary);
-            padding: 14px 12px; 
-            text-align:left; 
-            font-weight:600;
-            text-transform:uppercase; 
-            letter-spacing: 1px;
-            position:sticky; 
-            top:0; 
-            z-index:1;
-            font-size: 0.8em;
-            border-bottom: 1px solid var(--border-dark);
-        }
-        table td { 
-            padding: 14px 12px; 
-            border-bottom: 1px solid var(--border-dark); 
-            color: var(--text-primary); 
-            vertical-align:middle; 
-            font-weight: 500;
-        }
-        table tr:last-child td { border-bottom: none; }
-        table tr:hover td { background: rgba(0,0,0,0.02); }
-
-        /* ── BADGES ── */
-        .badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.75em; font-weight:600; letter-spacing:0.5px; }
-        .b-available  { background:rgba(5, 150, 105, 0.1);  color:#059669; }
-        .b-soldout    { background:rgba(220, 38, 38, 0.1);   color:#dc2626; }
-        .b-trending   { background:rgba(217, 119, 6, 0.1);  color:#d97706; }
-        .b-featured   { background:rgba(124, 58, 237, 0.1);  color:#7c3aed; }
-        .b-comingsoon { background:rgba(8, 145, 178, 0.1);   color:#0891b2; }
-        .b-ongoing    { background:rgba(37, 99, 235, 0.1);  color:#2563eb; }
-        .b-other      { background:rgba(100, 116, 139, 0.1); color:#475569;}
-        .b-active     { background:rgba(5, 150, 105, 0.1);  color:#059669; }
-
-        /* ── INSIGHT BOX ── */
-        .insight {
-            background: rgba(79, 70, 229, 0.04);
-            border-left: 4px solid var(--accent-main);
-            padding: 16px 20px;
-            margin-top: 16px;
-            border-radius: 0 12px 12px 0;
-            transition: all 0.3s;
-        }
-        .insight:hover { background: rgba(79, 70, 229, 0.08); }
-        .insight h4 { color:var(--accent-main); font-size:0.9em; margin-bottom:8px; font-weight:700; }
-        .insight p  { color:var(--text-secondary); font-size:0.85em; line-height:1.6; }
-
-        .fb-source-tag {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(37, 99, 235, 0.1); 
-            color: var(--blue); padding: 6px 14px; border-radius: 20px;
-            font-size: 0.75em; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 16px;
-        }
-
-        /* ── LOADER ── */
-        #loader {
-            position:fixed; inset:0;
-            background:var(--bg-base);
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            z-index:9999; gap:20px;
-        }
-        .loader-ring {
-            width:60px; height:60px;
-            border:4px solid rgba(79, 70, 229, 0.1);
-            border-top:4px solid var(--accent-main);
-            border-radius:50%;
-            animation:spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .loader-text { color:var(--text-primary); font-family:'Inter',sans-serif; font-size:1em; font-weight:600; letter-spacing:2px; }
-
-        /* ── SECTION LABEL ── */
-        .section-label {
-            grid-column:span 12;
-            font-family:'Inter',sans-serif;
-            font-size:0.85em; 
-            font-weight: 700;
-            letter-spacing:2px;
-            text-transform:uppercase;
-            color:var(--text-muted);
-            padding:16px 0 8px 0;
-            border-bottom: 2px solid var(--border-dark);
-            margin-top:16px;
-        }
-        .section-label.fb-section { color: var(--blue); border-bottom-color: rgba(37, 99, 235, 0.2); }
-
-        .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:12px; }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width:1200px) {
-            .span-8 { grid-column:span 12; }
-            .span-6 { grid-column:span 12; }
-            .span-4 { grid-column:span 12; }
-            .kpi-row { grid-template-columns:repeat(2,1fr); }
-        }
-        @media (max-width:768px) {
-            .kpi-row { grid-template-columns:1fr; }
-            .header  { flex-direction:column; gap:16px; text-align: center; }
-            .summary-grid { grid-template-columns:1fr; }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js">
+    </script>
+    <script src="config.js">
+    </script>
 </head>
 <body>
 
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
     <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-         INTERACTIVE AURORA BACKGROUND
-    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
-    <canvas id="bg-canvas"></canvas>
-    <div id="cursor-glow"></div>
-
-    <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-         LOADING OVERLAY
-    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+     LOADING OVERLAY
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">LOADING DASHBOARD...</div>
+</div>
     <div id="loader">
         <div class="loader-ring"></div>
-        <div class="loader-text">PREPARING DASHBOARD</div>
+        <div class="loader-text">LOADING DASHBOARD...</div>
     </div>
 
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
     <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-         HEADER
-    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+     HEADER
+     Title/subtitle → config.js DASHBOARD_TITLE / DASHBOARD_SUBTITLE
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<header class="header">
+  <div>
+    <h1 id="hTitle">Loading...</h1>
+    <div class="sub" id="hSub"></div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="val" id="hCompanies">—</div><div class="lbl">Companies</div></div>
+    <div class="hstat"><div class="val" id="hProjects">—</div><div class="lbl">Projects</div></div>
+    <div class="date-badge" id="hDate">📅 ...</div>
+  </div>
+</header>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
     <header class="header">
         <div>
             <h1 id="hTitle">Loading...</h1>
@@ -393,68 +68,216 @@
     </header>
 
     <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-         STATUS BAR
-    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+     STATUS BAR + REFRESH BUTTON
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<div class="status-bar">
+  <span class="status-dot"></span>
+  <span id="dataSource" class="source-label">Initialising...</span>
+  <button class="refresh-btn" onclick="loadAndRender()">⟳ Refresh Data</button>
+</div>
+
+<div class="grid">
+
+  <!-- ═══════════════════════════════════════
+       KPI CARDS  — 4 summary boxes
+  ═══════════════════════════════════════ -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-lbl">Companies Tracked</div>
+      <div class="kpi-val" id="kpi1">—</div>
+      <div class="kpi-sub" id="kpi1s"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Total Projects</div>
+      <div class="kpi-val" id="kpi2">—</div>
+      <div class="kpi-sub" id="kpi2s"></div>
     <div class="status-bar">
         <span class="status-dot"></span>
         <span id="dataSource" class="source-label">Initialising...</span>
         <button class="refresh-btn" onclick="loadAndRender()">⟳ Refresh Data</button>
     </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Districts Covered</div>
+      <div class="kpi-val" id="kpi3">—</div>
+      <div class="kpi-sub" id="kpi3s"></div>
+    </div>
+    <div class="kpi-card kpi-fb">
+      <div class="kpi-lbl">FB Active Listings</div>
+      <div class="kpi-val" id="kpi4">—</div>
+      <div class="kpi-sub" id="kpi4s"></div>
+    </div>
+  </div>
 
+  <div class="section-label">📊 Company Intelligence</div>
     <div class="grid">
 
+  <!-- ═══════════════════════════════════════
+        <!-- ═══════════════════════════════════════
+       KPI CARDS  — 3 summary boxes (Districts Covered removed)
+  ═══════════════════════════════════════ -->
         <div class="kpi-row">
-            <div class="kpi-card reveal">
+            <div class="kpi-card">
                 <div class="kpi-lbl">Companies Tracked</div>
                 <div class="kpi-val" id="kpi1">—</div>
                 <div class="kpi-sub" id="kpi1s"></div>
             </div>
-            <div class="kpi-card reveal">
+            <div class="kpi-card">
                 <div class="kpi-lbl">Total Projects</div>
                 <div class="kpi-val" id="kpi2">—</div>
                 <div class="kpi-sub" id="kpi2s"></div>
             </div>
-            <div class="kpi-card kpi-fb reveal">
+            <div class="kpi-card kpi-fb">
                 <div class="kpi-lbl">FB Active Listings</div>
                 <div class="kpi-val" id="kpi4">—</div>
                 <div class="kpi-sub" id="kpi4s"></div>
             </div>
         </div>
 
-        <div class="section-label reveal">📊 Company Intelligence</div>
+        <div class="section-label">📊 Company Intelligence</div>
 
-        <div class="card span-8 reveal">
+        <!-- ═══════════════════════════════════════
+       CHART 1 — BUBBLE: Company Market Presence
+       X = Years in business
+       Y = Project count
+       Bubble size = total number of projects
+  ═══════════════════════════════════════ -->
+  <div class="card span-8">
+    <div class="card-title"><span>🫧</span> Company Market Presence</div>
+    <div class="card-sub">Years in market vs. project count — bubble size = total number of projects</div>
+    <div class="ch ch-480"><canvas id="bubbleChart"></canvas></div>
+  </div>
+        <div class="card span-8">
             <div class="card-title"><span>🫧</span> Company Market Presence</div>
             <div class="card-sub">Years in market vs. project count — bubble size = total number of projects</div>
             <div class="ch ch-480"><canvas id="bubbleChart"></canvas></div>
         </div>
 
-        <div class="card span-4 reveal">
+  <!-- ═══════════════════════════════════════
+        <!-- ═══════════════════════════════════════
+       CHART 2 — TIMELINE: Years in Business
+  ═══════════════════════════════════════ -->
+  <div class="card span-4">
+    <div class="card-title"><span>⏳</span> Company Establishment Timeline</div>
+    <div class="card-sub">Years each company has been operating</div>
+    <div class="ch ch-480"><canvas id="ageChart"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CHART 3 — STACKED BAR: Status by Company
+       Colours: Available=green, Sold Out=red,
+       Trending=orange, Featured=purple, etc.
+  ═══════════════════════════════════════ -->
+  <div class="card span-12">
+    <div class="card-title"><span>📋</span> Project Status Breakdown by Company</div>
+    <div class="card-sub">Available / Sold Out / Trending / Featured / Other per company</div>
+    <div class="status-legend" id="statusLegend"></div>
+    <div class="ch ch-400"><canvas id="stackedBar"></canvas></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+        <div class="card span-4">
             <div class="card-title"><span>⏳</span> Company Establishment Timeline</div>
             <div class="card-sub">Years each company has been operating</div>
             <div class="ch ch-480"><canvas id="ageChart"></canvas></div>
         </div>
 
-        <div class="section-label reveal">🗺️ District Intelligence</div>
+        <!-- ═══════════════════════════════════════
+       DISTRICT INTELLIGENCE SECTION
+  ═══════════════════════════════════════ -->
+  <div class="section-label">🗺️ District Intelligence</div>
 
-        <div class="card span-12 reveal">
+  <!-- CHART: District Dominance stacked bar — all districts -->
+  <div class="card span-12">
+    <div class="card-title"><span>🗺️</span> District Dominance by Company</div>
+    <div class="card-sub">All districts — project count per company stacked · Shows which companies dominate each district</div>
+    <div class="ch ch-480"><canvas id="districtDominanceChart"></canvas></div>
+  </div>
+
+  <!-- TABLE: DSD-wise dominant company -->
+  <div class="card span-6">
+    <div class="card-title"><span>📍</span> DSD-wise Company Dominance</div>
+    <div class="card-sub">Leading company per Divisional Secretariat Division</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>District</th>
+            <th>DSD</th>
+            <th>Top Company</th>
+            <th>Projects</th>
+            <th>2nd Company</th>
+            <th>Projects</th>
+          </tr>
+        </thead>
+        <tbody id="dsdDominanceBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TABLE: Company Territory Map -->
+  <div class="card span-6">
+    <div class="card-title"><span>🏢</span> Company Territory Map</div>
+    <div class="card-sub">Which districts each company operates in</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Districts</th>
+            <th>Areas</th>
+            <th>Projects</th>
+          </tr>
+        </thead>
+        <tbody id="companyTerritoryBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">📍 Location &amp; Pricing Intelligence</div>
+
+  <!-- ═══════════════════════════════════════
+        <div class="section-label">🗺️ District Intelligence</div>
+
+        <!-- CHART: District Dominance stacked bar — all districts -->
+        <div class="card span-12">
             <div class="card-title"><span>🗺️</span> District Dominance by Company</div>
             <div class="card-sub">All districts — project count per company stacked · Shows which companies dominate each district</div>
             <div class="ch ch-480"><canvas id="districtDominanceChart"></canvas></div>
         </div>
 
-        <!-- NOTE: DSD Table Removed. Company Territory spans 12 columns now -->
-        <div class="card span-12 reveal">
+        <!-- TABLE: DSD-wise dominant company -->
+        <div class="card span-6">
+            <div class="card-title"><span>📍</span> DSD-wise Company Dominance</div>
+            <div class="card-sub">Leading company per Divisional Secretariat Division</div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>District</th>
+                            <th>DSD</th>
+                            <th>Top Company</th>
+                            <th>Projects</th>
+                            <th>2nd Company</th>
+                            <th>Projects</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dsdDominanceBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLE: Company Territory Map -->
+        <div class="card span-6">
             <div class="card-title"><span>🏢</span> Company Territory Map</div>
-            <div class="card-sub">Which districts each company operates in across the country</div>
+            <div class="card-sub">Which districts each company operates in</div>
             <div class="tbl-wrap">
                 <table>
                     <thead>
                         <tr>
                             <th>Company</th>
-                            <th style="text-align:center">Total Districts</th>
-                            <th>Operating Districts (Alphabetical)</th>
-                            <th style="text-align:center">Total Projects</th>
+                            <th>Districts</th>
+                            <th>Areas</th>
+                            <th>Projects</th>
                         </tr>
                     </thead>
                     <tbody id="companyTerritoryBody"></tbody>
@@ -462,21 +285,55 @@
             </div>
         </div>
 
-        <div class="section-label reveal">📍 Location &amp; Pricing Intelligence</div>
+        <div class="section-label">📍 Location &amp; Pricing Intelligence</div>
 
-        <div class="card span-6 reveal">
+        <!-- ═══════════════════════════════════════
+       CHART 4 — BAR: Top Locations
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>📍</span> Top Locations by Project Count</div>
+    <div class="card-sub">Most active areas across all companies</div>
+    <div class="ch ch-480"><canvas id="locationBar"></canvas></div>
+  </div>
+        <div class="card span-6">
             <div class="card-title"><span>📍</span> Top Locations by Project Count</div>
             <div class="card-sub">Most active areas across all companies</div>
             <div class="ch ch-480"><canvas id="locationBar"></canvas></div>
         </div>
 
-        <div class="card span-6 reveal">
+  <!-- ═══════════════════════════════════════
+        <!-- ═══════════════════════════════════════
+       CHART 5 — BAR: Avg Price by Location
+  ═══════════════════════════════════════ -->
+  <div class="card span-6">
+    <div class="card-title"><span>💰</span> Average Price / Perch by Location</div>
+    <div class="card-sub">Locations with sufficient pricing data (LKR per perch)</div>
+    <div class="ch ch-480"><canvas id="locationPriceBar"></canvas></div>
+  </div>
+        <div class="card span-6">
             <div class="card-title"><span>💰</span> Average Price / Perch by Location</div>
             <div class="card-sub">Locations with sufficient pricing data (LKR per perch)</div>
             <div class="ch ch-480"><canvas id="locationPriceBar"></canvas></div>
         </div>
 
-        <div class="card span-12 reveal">
+  <!-- ═══════════════════════════════════════
+        <!-- ═══════════════════════════════════════
+       CHART 6 — BAR: Plot Size Distribution
+       Bar = project count per size bucket
+       Buckets defined in config.js → PLOT_BUCKETS
+  ═══════════════════════════════════════ -->
+  <div class="card span-12">
+    <div class="card-title"><span>📐</span> Plot Size Analysis (Perches)</div>
+    <div class="card-sub">Project count per plot size — identify the most common land configurations in the market</div>
+    <div class="ch ch-300"><canvas id="plotSizeBar"></canvas></div>
+    <div class="insight">
+      <h4>💡 Plot Size Insight</h4>
+      <p id="plotInsight">Calculating...</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+        <div class="card span-12">
             <div class="card-title"><span>📐</span> Plot Size Analysis (Perches)</div>
             <div class="card-sub">Project count per plot size — identify the most common land configurations in the market</div>
             <div class="ch ch-300"><canvas id="plotSizeBar"></canvas></div>
@@ -486,9 +343,58 @@
             </div>
         </div>
 
-        <div class="section-label fb-section reveal">📘 Facebook Active Market Intelligence</div>
+        <!-- ═══════════════════════════════════════
+       FACEBOOK ADS SECTION
+       Data source: Facebook Ads Excel / Google Sheet
+  ═══════════════════════════════════════ -->
+  <div class="section-label fb-section">📘 Facebook Active Market Intelligence</div>
 
-        <div class="card span-12 reveal">
+  <!-- TABLE A — FB Active Lands with Location & Price -->
+  <div class="card span-6">
+    <div class="card-title fb-title"><span>📌</span> Available Active Lands</div>
+    <div class="card-sub">Live Facebook ad listings — location and advertised price per perch</div>
+    <div class="fb-source-tag">📘 Facebook Ads Data · Active 2026 Listings</div>
+    <div class="tbl-wrap">
+      <table class="fb-tbl">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Price / Perch</th>
+            <th>Ad Date</th>
+          </tr>
+        </thead>
+        <tbody id="fbLandsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TABLE B — FB Investment Opportunities -->
+  <div class="card span-6">
+    <div class="card-title fb-title"><span>🎯</span> Available Projects — Investment Opportunities</div>
+    <div class="card-sub">Facebook-advertised active projects ranked by price per perch</div>
+    <div class="fb-source-tag">📘 Facebook Ads Data · Active 2026 Listings</div>
+    <div class="tbl-wrap">
+      <table class="fb-tbl">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Price / Perch</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody id="fbOppsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+        <div class="section-label fb-section">📘 Facebook Active Market Intelligence</div>
+
+        <!-- TABLE A — FB Active Lands with Location & Price -->
+        <div class="card span-12">
             <div class="card-title fb-title"><span>📌</span> Available Active Lands</div>
             <div class="card-sub">Live Facebook ad listings — location and advertised price per perch</div>
             <div class="fb-source-tag">📘 Facebook Ads Data · Active 2026 Listings</div>
@@ -507,10 +413,656 @@
             </div>
         </div>
 
-        <div class="card span-12 reveal">
-            <div class="card-title"><span>📝</span> Executive Summary &amp; Strategic Insights</div>
+        <!-- ═══════════════════════════════════════
+       EXECUTIVE SUMMARY — 6 INSIGHT BOXES
+       ──────────────────────────────────────
+       ✏️ TO EDIT THESE TEXT BOXES:
+@@ -251,796 +216,807 @@ <h4>💡 Plot Size Insight</h4>
+       Edit the "title" and "text" for each box
+       Save → dashboard updates in 60 seconds
+  ═══════════════════════════════════════ -->
+  <div class="card span-12">
+    <div class="card-title"><span>📝</span> Executive Summary &amp; Strategic Insights
+      <span style="font-size:0.7em;color:var(--text-secondary);font-weight:400;letter-spacing:0;text-transform:none;margin-left:8px">
+        (edit text in config.js → INSIGHTS array)
+      </span>
+    </div>
+    <div class="summary-grid" id="insightGrid">
+      <!-- Populated from CONFIG.INSIGHTS in config.js -->
+    </div>
+  </div>
+
+</div><!-- /grid -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   COLOUR PALETTE
+═══════════════════════════════════════════════════════════ */
+const C = {
+  gold:'#d4a574', goldLight:'#e8c9a0',
+  blue:'#4a90d9', green:'#2ecc71', red:'#e74c3c',
+  purple:'#9b59b6', cyan:'#00bcd4', orange:'#f39c12',
+  text:'#a0a0b0', border:'rgba(42,42,74,0.5)'
+};
+const MULTI = [
+  C.blue,C.green,C.purple,C.cyan,C.orange,C.red,
+  '#52be80','#3498db','#8e44ad','#1abc9c','#e67e22','#c0392b',
+  '#27ae60','#2980b9','#d35400','#16a085'
+];
+
+Chart.defaults.color       = C.text;
+Chart.defaults.borderColor = C.border;
+Chart.defaults.font.family = "'Nunito', sans-serif";
+
+
+/* ═══════════════════════════════════════════════════════════
+   PRICE PARSER
+═══════════════════════════════════════════════════════════ */
+function cleanPrice(raw) {
+  if (raw === null || raw === undefined) return null;
+  const s = String(raw).trim();
+  if (!s || s === 'nan' || s === 'None' || s === 'N/A') return null;
+
+  const minP = (CONFIG.MIN_VALID_PRICE) || 50000;
+  const maxP = (CONFIG.MAX_VALID_PRICE) || 15000000;
+
+  const parts = s.split(/\s*[_\u2013\u2014]\s*/);
+  const nums = [];
+
+  for (const p of parts) {
+    const digits = p.replace(/[^\d]/g, '');
+    if (!digits || digits.length < 4) continue;
+    const n = parseInt(digits, 10);
+    if (n >= minP && n <= maxP) nums.push(n);
+  }
+
+  if (!nums.length) return null;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GENERIC NUMBER PARSER
+═══════════════════════════════════════════════════════════ */
+function cleanNum(raw) {
+  if (raw === null || raw === undefined) return null;
+  const digits = String(raw).replace(/[^\d.]/g, '').trim();
+  const n = parseFloat(digits);
+  return isNaN(n) ? null : n;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS NORMALISER
+═══════════════════════════════════════════════════════════ */
+function normStatus(s) {
+  s = String(s || '').trim().toLowerCase();
+  if (['available','avalibale','avalable','for sale'].includes(s)) return 'Available';
+  if (['sold out','sold out ','sold','almost sold','soldout'].includes(s))   return 'Sold Out';
+  if (s === 'trending')  return 'Trending';
+  if (s === 'featured')  return 'Featured';
+  if (['coming soon','up coming','upcoming'].includes(s)) return 'Coming Soon';
+  if (['ongoing','new','ongoing projects'].includes(s))   return 'Ongoing';
+  return 'Other';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   YEAR PARSER
+═══════════════════════════════════════════════════════════ */
+function parseYear(v) {
+  const m = String(v || '').match(/20\d\d|19\d\d/);
+  return m ? parseInt(m[0]) : null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REGION CLASSIFIER
+═══════════════════════════════════════════════════════════ */
+function getRegion(loc) {
+  const l = (loc || '').toLowerCase();
+  const urban    = CONFIG.URBAN_AREAS    || [];
+  const labels   = CONFIG.REGION_LABELS  || ['Urban','Suburban','Rural'];
+  if (urban.some(a => l.includes(a.toLowerCase()))) return labels[0];
+  return labels[2];
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORMAT PRICE FOR DISPLAY
+═══════════════════════════════════════════════════════════ */
+function fmtPrice(v) {
+  if (!v || v <= 0) return 'N/A';
+  if (v >= 1000000) return 'Rs.\u00a0' + (v / 1000000).toFixed(1) + 'M';
+  if (v >= 1000)    return 'Rs.\u00a0' + Math.round(v / 1000) + 'K';
+  return 'Rs.\u00a0' + Math.round(v).toLocaleString();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORMAT DATE
+═══════════════════════════════════════════════════════════ */
+function fmtDate(d) {
+  if (!d) return '—';
+  try {
+    const dt = new Date(d);
+    if (isNaN(dt)) return d;
+    return dt.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  } catch(e) { return d; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRICE CATEGORY (for FB table)
+═══════════════════════════════════════════════════════════ */
+function priceCategory(px) {
+  if (!px) return '<span class="badge b-other">N/A</span>';
+  if (px >= 1000000) return '<span class="badge b-featured">Premium 1M+</span>';
+  if (px >= 500000)  return '<span class="badge b-trending">Mid-High</span>';
+  if (px >= 200000)  return '<span class="badge b-available">Affordable</span>';
+  return '<span class="badge b-ongoing">Budget</span>';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV PARSER — Main data Google Sheets
+   Column layout (0-indexed):
+   [0] Company Start Year  [1] Total Complete  [2] Employment
+   [3] Branch Network      [4] Customers       [5] Company Name
+   [6] Project Name        [7] District        [8] DSD
+   [9] Location            [10] Price          [11] Status
+   [12] Total Blocks       [13] Available      [14] Extent
+═══════════════════════════════════════════════════════════ */
+function parseCSV(csvText) {
+  const result = Papa.parse(csvText, { header:false, skipEmptyLines:true });
+  const rows   = result.data;
+  if (rows.length < 2) return [];
+
+  const data = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r  = rows[i];
+    const co = (r[5] || '').trim();
+    if (!co || co === 'nan') continue;
+    const loc = (r[9] || '').trim();
+    if (!loc || loc === 'nan') continue;
+
+    data.push({
+      co:       co,
+      yr:       parseYear(r[0]),
+      pn:       (r[6] || '').trim() || null,
+      district: (r[7] || '').trim() || null,
+      dsd:      (r[8] || '').trim() || null,
+      loc:      loc,
+      px:       cleanPrice(r[10]),
+      st:       normStatus(r[11]),
+      tb:       cleanNum(r[12]),
+      av:       cleanNum(r[13]),
+      ep:       cleanNum(r[14]),
+    });
+  }
+  return data;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV PARSER — Facebook Ads Google Sheets
+   Columns: Company, Location, Price, Published Date
+═══════════════════════════════════════════════════════════ */
+function parseFBCSV(csvText) {
+  const result = Papa.parse(csvText, { header:true, skipEmptyLines:true });
+  const records = [];
+  let lastCo = '';
+
+  for (const r of result.data) {
+    const co  = (r['Company'] || r['company'] || '').trim();
+    if (co) lastCo = co;
+    const loc = (r['Location'] || r['location'] || '').trim();
+    if (!loc) continue;
+
+    records.push({
+      co:   lastCo,
+      loc:  loc,
+      px:   cleanPrice(r['Price'] || r['price']),
+      date: (r['Published Date'] || r['published_date'] || '').trim()
+    });
+  }
+  return records.filter(r => r.loc && r.loc !== 'nan');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHART REGISTRY
+═══════════════════════════════════════════════════════════ */
+const charts = {};
+function mkChart(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
+}
+const trunc = (s, n) => (!s || s.length <= n) ? (s||'') : s.substring(0, n) + '…';
+const myColor = (name, i) =>
+  (CONFIG.YOUR_COMPANY && name === CONFIG.YOUR_COMPANY) ? C.gold : MULTI[i % MULTI.length];
+
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER FACEBOOK TABLES
+═══════════════════════════════════════════════════════════ */
+function renderFBTables(fbData) {
+  // Update KPI 4
+  const fbWithPrice = fbData.filter(r => r.px !== null);
+  document.getElementById('kpi4').textContent  = fbData.length;
+  document.getElementById('kpi4s').textContent = fbWithPrice.length + ' with price data';
+
+  // TABLE A — Active Lands (all, sorted by date desc)
+  const sorted = [...fbData].sort((a,b) => {
+    const da = a.date ? new Date(a.date) : new Date(0);
+    const db = b.date ? new Date(b.date) : new Date(0);
+    return db - da;
+  });
+
+  document.getElementById('fbLandsBody').innerHTML = sorted.map(r => `
+    <tr>
+      <td><strong>${r.co || '—'}</strong></td>
+      <td>${r.loc}</td>
+      <td>${r.px ? fmtPrice(r.px) : '<span style="color:var(--text-secondary)">—</span>'}</td>
+      <td style="font-size:0.82em;color:var(--text-secondary)">${fmtDate(r.date)}</td>
+    </tr>`).join('');
+
+  // TABLE B — Investment Opportunities (with price, sorted high→low)
+  const withPrice = fbData
+    .filter(r => r.px !== null)
+    .sort((a,b) => b.px - a.px);
+
+  document.getElementById('fbOppsBody').innerHTML = withPrice.map((r, i) => `
+    <tr>
+      <td style="color:var(--text-secondary);font-weight:700">${i+1}</td>
+      <td><strong>${r.co || '—'}</strong></td>
+      <td>${r.loc}</td>
+      <td><strong>${fmtPrice(r.px)}</strong></td>
+      <td>${priceCategory(r.px)}</td>
+    </tr>`).join('');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN RENDER  (main data)
+═══════════════════════════════════════════════════════════ */
+function renderDashboard(data) {
+  const CFG = CONFIG || {};
+
+  // Apply header
+  document.getElementById('hTitle').textContent = CFG.DASHBOARD_TITLE    || 'Land Market Dashboard';
+  document.getElementById('hSub').textContent   = CFG.DASHBOARD_SUBTITLE || '';
+  document.getElementById('hDate').textContent  = CFG.DATA_DATE          || '📅 2026';
+
+  // ── Aggregate companies ──
+  const companies = {};
+  data.forEach(r => {
+    if (!companies[r.co]) companies[r.co] = { name:r.co, yr:r.yr, projects:0, blocks:0, statuses:{} };
+    const c = companies[r.co];
+    c.projects++;
+    if (r.tb) c.blocks += r.tb;
+    c.statuses[r.st] = (c.statuses[r.st] || 0) + 1;
+    if (!c.yr && r.yr) c.yr = r.yr;
+  });
+  const coList = Object.values(companies).sort((a, b) => b.projects - a.projects);
+
+  // ── KPIs ──
+  const totalPr = data.length;
+  const locs    = new Set(data.map(r => r.loc));
+
+  document.getElementById('hCompanies').textContent = coList.length;
+  document.getElementById('hProjects').textContent  = totalPr.toLocaleString();
+
+  document.getElementById('kpi1').textContent  = coList.length;
+  document.getElementById('kpi1s').textContent = 'Active Market Players';
+  document.getElementById('kpi2').textContent  = totalPr.toLocaleString();
+  document.getElementById('kpi2s').textContent = 'All Project Statuses';
+  document.getElementById('kpi3').textContent  = new Set(data.map(r=>r.district).filter(Boolean)).size;
+  document.getElementById('kpi3s').textContent = locs.size + ' unique locations';
+  // kpi4 filled by renderFBTables
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 1 — BUBBLE: Company Market Presence
+     Bubble size = total number of projects (not blocks)
+  ───────────────────────────────────────────────────────── */
+  const top10       = coList.slice(0, 10);
+  const maxProjects = Math.max(...top10.map(c => c.projects), 1);
+  mkChart('bubbleChart', {
+    type: 'bubble',
+    data: { datasets: top10.map((c, i) => ({
+      label: c.name,
+      data: [{ x: c.yr ? (CFG.CURRENT_YEAR||2026) - c.yr : 5,
+               y: c.projects,
+               r: Math.max(8, Math.round((c.projects / maxProjects) * 45)) }],
+      backgroundColor: myColor(c.name, i) + 'bb',
+      borderColor:     myColor(c.name, i),
+      borderWidth: (CFG.YOUR_COMPANY && c.name === CFG.YOUR_COMPANY) ? 3 : 1.5,
+    }))},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'bottom', labels:{ usePointStyle:true, padding:10, font:{size:10} } },
+        tooltip: { callbacks: { label: ctx => {
+          const c = top10[ctx.datasetIndex];
+          return [`${c.name}`,
+            `Years in Market: ${c.yr ? (CFG.CURRENT_YEAR||2026)-c.yr : '?'}`,
+            `Total Projects: ${c.projects}`];
+        }}}
+      },
+      scales: {
+        x: { title:{ display:true, text:'Years in Business', color:C.gold }, grid:{ color:C.border } },
+        y: { title:{ display:true, text:'Number of Projects', color:C.gold }, grid:{ color:C.border } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 2 — TIMELINE: Years Each Company Has Operated
+  ───────────────────────────────────────────────────────── */
+  const coWithYr = coList.filter(c => c.yr).sort((a,b) => a.yr-b.yr).slice(0, 16);
+  mkChart('ageChart', {
+    type: 'bar',
+    data: {
+      labels: coWithYr.map(c => trunc(c.name, 14)),
+      datasets: [{ label:'Years',
+        data:  coWithYr.map(c => (CFG.CURRENT_YEAR||2026) - c.yr),
+        backgroundColor: coWithYr.map((c,i) => myColor(c.name,i)+'88'),
+        borderColor:     coWithYr.map((c,i) => myColor(c.name,i)),
+        borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx =>
+          `${ctx.raw} years (founded ${coWithYr[ctx.dataIndex].yr})` }}},
+      scales: {
+        x: { title:{ display:true, text:'Years', color:C.gold }, grid:{ color:C.border } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 3 — STACKED BAR: Status Breakdown by Company
+  ───────────────────────────────────────────────────────── */
+  const statusKeys = ['Available','Sold Out','Trending','Featured','Coming Soon','Ongoing'];
+  const statusCols = [C.green,C.red,C.orange,C.purple,C.cyan,C.blue];
+  const stackCo    = coList.slice(0, CFG.TOP_COMPANIES_COUNT || 20);
+  mkChart('stackedBar', {
+    type: 'bar',
+    data: {
+      labels: stackCo.map(c => trunc(c.name, 14)),
+      datasets: statusKeys.map((s,i) => ({
+        label: s,
+        data:  stackCo.map(c => c.statuses[s] || 0),
+        backgroundColor: statusCols[i]+'99',
+        borderColor: statusCols[i], borderWidth:1, borderRadius:2
+      }))
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:9}, padding:10 } } },
+      scales: {
+        x: { stacked:true, grid:{ color:C.border }, ticks:{ font:{size:8}, maxRotation:45 } },
+        y: { stacked:true, title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } }
+      }
+    }
+  });
+  document.getElementById('statusLegend').innerHTML =
+    statusKeys.map((s,i) =>
+      `<span class="leg-item"><span class="leg-dot" style="background:${statusCols[i]}"></span>${s}</span>`
+    ).join('');
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 4 — BAR: Top Locations by Project Count
+  ───────────────────────────────────────────────────────── */
+  const locCount = {};
+  data.forEach(r => { locCount[r.loc] = (locCount[r.loc]||0)+1; });
+  const topLocs = Object.entries(locCount).sort((a,b)=>b[1]-a[1])
+                         .slice(0, CFG.TOP_LOCATIONS_COUNT||20);
+  mkChart('locationBar', {
+    type: 'bar',
+    data: {
+      labels: topLocs.map(([l])=>l),
+      datasets: [{ label:'Projects', data:topLocs.map(([,n])=>n),
+        backgroundColor:C.purple+'88', borderColor:C.purple, borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { title:{ display:true, text:'Projects', color:C.gold }, grid:{ color:C.border } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 5 — BAR: Avg Price / Perch by Location
+  ───────────────────────────────────────────────────────── */
+  const locPrices = {};
+  data.forEach(r => {
+    if (r.px !== null && r.px > 0) {
+      if (!locPrices[r.loc]) locPrices[r.loc] = [];
+      locPrices[r.loc].push(r.px);
+    }
+  });
+  const locAvg = Object.entries(locPrices)
+    .filter(([,a]) => a.length >= 2)
+    .map(([l,a]) => [l, Math.round(a.reduce((x,y)=>x+y,0)/a.length)])
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0, CFG.TOP_PRICE_LOCATIONS_COUNT||20);
+  mkChart('locationPriceBar', {
+    type: 'bar',
+    data: {
+      labels: locAvg.map(([l])=>l),
+      datasets: [{ label:'Avg Price', data:locAvg.map(([,p])=>p),
+        backgroundColor:C.orange+'88', borderColor:C.orange, borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx=>`${fmtPrice(ctx.raw)} per perch` }}},
+      scales: {
+        x: { title:{ display:true, text:'LKR per Perch', color:C.gold }, grid:{ color:C.border },
+             ticks:{ callback: v => fmtPrice(v) } },
+        y: { grid:{ display:false }, ticks:{ font:{ size:9 } } }
+      }
+    }
+  });
+
+
+  /* ─────────────────────────────────────────────────────────
+     CHART 6 — BAR: Plot Size Distribution (no price line)
+  ───────────────────────────────────────────────────────── */
+  const rawBuckets = (CFG.PLOT_BUCKETS && CFG.PLOT_BUCKETS.length)
+    ? CFG.PLOT_BUCKETS
+    : [
+        { label:'6–8',   max:8    },
+        { label:'9–11',  max:11   },
+        { label:'12–15', max:15   },
+        { label:'16–20', max:20   },
+        { label:'20+',   max:9999 },
+      ];
+
+  const buckets = rawBuckets.map(b => ({ ...b, count:0, avail:[] }));
+  data.forEach(r => {
+    if (!r.ep || r.ep <= 0) return;
+    const bucket = buckets.find(b => r.ep <= b.max);
+    if (!bucket) return;
+    bucket.count++;
+    if (r.av !== null && r.av > 0) bucket.avail.push(r.av);
+  });
+
+  const bucketAvgAvail = buckets.map(b =>
+    b.avail.length  ? Math.round(b.avail.reduce((a,c)=>a+c,0)/b.avail.length) : 0);
+
+  mkChart('plotSizeBar', {
+    type: 'bar',
+    data: {
+      labels: buckets.map(b => b.label + '\nperches'),
+      datasets: [
+        { label:'Number of Projects', data:buckets.map(b=>b.count),
+          backgroundColor:C.cyan+'88', borderColor:C.cyan, borderWidth:1, borderRadius:6 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'top', labels:{ usePointStyle:true, color:C.text, font:{size:10} } },
+        tooltip: { callbacks: { label: ctx => [
+          `Projects: ${ctx.raw}`,
+          `Avg available plots: ${bucketAvgAvail[ctx.dataIndex]}`,
+        ]}}
+      },
+      scales: {
+        x:  { grid:{ color:C.border }, ticks:{ font:{ size:10 } } },
+        y:  { title:{ display:true, text:'Number of Projects', color:C.cyan },
+              grid:{ color:C.border }, beginAtZero:true },
+      }
+    }
+  });
+
+  // Plot insight
+  const bucketsWithData = buckets.filter(b => b.count >= 3);
+  if (bucketsWithData.length > 0) {
+    const most = bucketsWithData.reduce((a,b) => a.count >= b.count ? a : b);
+    document.getElementById('plotInsight').textContent =
+      `${most.label} perch plots are the most widely offered (${most.count} projects). ` +
+      `This size bracket has the highest market competition and buyer familiarity. ` +
+      `Consider differentiation in under-served size bands for strategic positioning.`;
+  }
+
+
+  /* ─────────────────────────────────────────────────────────
+     EXECUTIVE SUMMARY INSIGHT BOXES
+  ───────────────────────────────────────────────────────── */
+  const top3co = coList.slice(0, 3)
+    .map(c => `${c.name} (${c.projects} projects)`).join(', ');
+  const autoText = `Top competitors: ${top3co}. Monitor their pricing and new location launches closely.`;
+
+  const fallbackInsights = [
+    { icon:'🔴', title:'Market Saturation Zones',
+      text:'Homagama, Athurugiriya, and Piliyandala show the highest project density.' },
+    { icon:'🟡', title:'Growth Opportunities',
+      text:'Kurunegala, Tangalle, and Matara show less competition with growing demand.' },
+    { icon:'🟢', title:'Pricing Strategy',
+      text:'Rs. 200,000–500,000/perch shows the highest absorption rate.' },
+    { icon:'📊', title:'Project Scale Sweet Spot',
+      text:'20–60 block projects show fastest sell-through.' },
+    { icon:'🏗️', title:'Plot Size Preference',
+      text:'9–11 perch plots dominate. 6–8 trending in urban areas.' },
+    { icon:'⚡', title:'Top Competitive Threats', text:'{AUTO}' },
+  ];
+
+  const insightItems = (CFG.INSIGHTS && CFG.INSIGHTS.length)
+    ? CFG.INSIGHTS : fallbackInsights;
+
+  document.getElementById('insightGrid').innerHTML = insightItems.map(item => `
+    <div class="insight">
+      <h4>${item.icon || ''} ${item.title || ''}</h4>
+      <p>${(item.text || '') === '{AUTO}' ? autoText : (item.text || '')}</p>
+    </div>`).join('');
+
+  /* ─────────────────────────────────────────────────────────
+     DISTRICT INTELLIGENCE
+  ───────────────────────────────────────────────────────── */
+  renderDistrictIntelligence(data, coList);
+
+  // Hide loader
+  document.getElementById('loader').style.display = 'none';
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DISTRICT INTELLIGENCE RENDERER
+   - District Dominance stacked bar (all districts)
+   - DSD-wise dominant company table
+   - Company territory map table
+═══════════════════════════════════════════════════════════ */
+function renderDistrictIntelligence(data, coList) {
+
+  /* ── 1. Build district → { company → count } ── */
+  const distCoMap = {};   // { district: { company: count } }
+  const dsdCoMap  = {};   // { 'District||DSD': { company: count } }
+  const coDistMap = {};   // { company: Set<district> }
+
+  data.forEach(r => {
+    const dist = r.district || 'Unknown';
+    const dsd  = r.dsd      || 'Unknown';
+    const co   = r.co;
+
+    // district → company map
+    if (!distCoMap[dist]) distCoMap[dist] = {};
+    distCoMap[dist][co] = (distCoMap[dist][co] || 0) + 1;
+
+    // DSD → company map
+    const dsdKey = dist + '||' + dsd;
+    if (!dsdCoMap[dsdKey]) dsdCoMap[dsdKey] = {};
+    dsdCoMap[dsdKey][co] = (dsdCoMap[dsdKey][co] || 0) + 1;
+
+    // company → districts set
+    if (!coDistMap[co]) coDistMap[co] = new Set();
+    coDistMap[co].add(dist);
+  });
+
+  /* ── 2. Sort districts by total project count ── */
+  const distList = Object.keys(distCoMap).sort((a, b) => {
+    const ta = Object.values(distCoMap[a]).reduce((s,n)=>s+n,0);
+    const tb = Object.values(distCoMap[b]).reduce((s,n)=>s+n,0);
+    return tb - ta;
+  });
+
+  /* ── 3. Pick top companies for stacking (top 10 by project count) ── */
+  const topCoNames = coList.slice(0, 10).map(c => c.name);
+
+  /* ── 4. District Dominance stacked bar ── */
+  const stackDatasets = topCoNames.map((coName, i) => ({
+    label: trunc(coName, 18),
+    data:  distList.map(d => distCoMap[d][coName] || 0),
+    backgroundColor: myColor(coName, i) + '99',
+    borderColor:     myColor(coName, i),
+    borderWidth: 1,
+    borderRadius: 2,
+  }));
+
+  // Add "Others" dataset
+  const othersData = distList.map(d => {
+    const total = Object.values(distCoMap[d]).reduce((s,n)=>s+n,0);
+    const top10sum = topCoNames.reduce((s, cn) => s + (distCoMap[d][cn]||0), 0);
+    return total - top10sum;
+  });
+  if (othersData.some(v => v > 0)) {
+    stackDatasets.push({
+      label: 'Others',
+      data:  othersData,
+      backgroundColor: 'rgba(160,160,176,0.4)',
+      borderColor:     'rgba(160,160,176,0.7)',
+      borderWidth: 1,
+      borderRadius: 2,
+    });
+  }
+
+  mkChart('districtDominanceChart', {
+    type: 'bar',
+    data: { labels: distList, datasets: stackDatasets },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'right', labels:{ usePointStyle:true, font:{size:9}, color:C.text, padding:8 } },
+        tooltip: {
+          callbacks: {
+            title: ctx => ctx[0].label + ' District',
+            afterBody: ctx => {
+              const dist   = ctx[0].label;
+              const total  = Object.values(distCoMap[dist]).reduce((s,n)=>s+n,0);
+              const leader = Object.entries(distCoMap[dist]).sort((a,b)=>b[1]-a[1])[0];
+              return [`Total: ${total} projects`, `Leader: ${leader[0]} (${leader[1]})`];
+        <div class="card span-12">
+            <div class="card-title"><span>📝</span> Executive Summary &amp; Strategic Insights
+                <span style="font-size:0.7em;color:var(--text-secondary);font-weight:400;letter-spacing:0;text-transform:none;margin-left:8px">
+                    (edit text in config.js → INSIGHTS array)
+                </span>
+            </div>
             <div class="summary-grid" id="insightGrid">
-                <!-- Populated by JS -->
+                <!-- Populated from CONFIG.INSIGHTS in config.js -->
             </div>
         </div>
 
@@ -518,214 +1070,59 @@
 
     <script>
         /* ═══════════════════════════════════════════════════════════
-           YOUR CONFIGURATION
+           COLOUR PALETTE
         ═══════════════════════════════════════════════════════════ */
-        const CONFIG = {
-            GOOGLE_SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTG_z9yrnCzjeMgqlZBt7BNaGRPXf5MxnaE5_SL_HYk9wz6lGU3Fs3tJWK3vTUlWMLTyZK2U228OuI/pub?gid=2019630569&single=true&output=csv",
-            FACEBOOK_SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTG_z9yrnCzjeMgqlZBt7BNaGRPXf5MxnaE5_SL_HYk9wz6lGU3Fs3tJWK3vTUlWMLTyZK2U228OuI/pub?gid=1318686992&single=true&output=csv",
-            YOUR_COMPANY: "Prime Lands",
-            DASHBOARD_TITLE: "Land Market — Competitor Analysis",
-            DASHBOARD_SUBTITLE: "Real Estate Market Intelligence · 2026",
-            DATA_DATE: "Updated: 2026 June",
-            AUTO_REFRESH_MINUTES: 5,
-            TOP_COMPANIES_COUNT: 25,
-            TOP_LOCATIONS_COUNT: 25,
-            TOP_PRICE_LOCATIONS_COUNT: 25,
-            CURRENT_YEAR: 2026,
-            MIN_VALID_PRICE: 50000,
-            MAX_VALID_PRICE: 15000000,
-            PLOT_BUCKETS: [
-                { label: "6–8 perches",   max: 8    },
-                { label: "9–11 perches",  max: 11   },
-                { label: "12–15 perches", max: 15   },
-                { label: "16–20 perches", max: 20   },
-                { label: "20+ perches",   max: 9999 }
-            ],
-            INSIGHTS: [
-                { icon: "🔴", title: "Market Saturation Zones", text: "Kadawatha, Homagama, Panadura, and Piliyandala show the highest confirmed competitor activity based on live Facebook ads. These zones have multiple companies advertising simultaneously." },
-                { icon: "⚠️", title: "Premium Urban Gap", text: "Malabe, Hokandara, Gampaha town, and Piliyandala have active competitor ads at Rs. 950K–Rs. 1.95M per perch. Prime Lands holds one Malabe listing but shows no price — making it invisible to price-comparing buyers." },
-                { icon: "🟢", title: "Pricing Intelligence", text: "Budget below Rs. 400K accounts for 53% of active market volume. Mid-range Rs. 400K–900K holds 29%. Premium Rs. 900K–1.5M is 12%. Luxury above Rs. 1.5M is 6%." },
-                { icon: "📡", title: "Digital Ad Intelligence", text: "Prime Lands leads Facebook ad volume with 64 active listings. However, 73% of Prime Lands ads show no price versus Home Lands at 97% price transparency." },
-                { icon: "🏗️", title: "Plot Size Preference", text: "9–11 perch plots represent the largest share. 6–8 perch plots are gaining share in dense urban zones driven by affordability pressure. 12–15 perch is preferred in suburban locations." },
-                { icon: "⚡", title: "Top Competitive Threats", text: "{AUTO}" }
-            ]
+        const C = {
+            gold: '#d4a574',
+            goldLight: '#e8c9a0',
+            blue: '#4a90d9',
+            green: '#2ecc71',
+            red: '#e74c3c',
+            purple: '#9b59b6',
+            cyan: '#00bcd4',
+            orange: '#f39c12',
+            text: '#a0a0b0',
+            border: 'rgba(42,42,74,0.5)'
         };
-
-        /* ═══════════════════════════════════════════════════════════
-           ANIMATIONS & AURORA INTERACTIVE BACKGROUND (CANVAS)
-        ═══════════════════════════════════════════════════════════ */
-        function initInteractiveBackground() {
-            const canvas = document.getElementById('bg-canvas');
-            const ctx = canvas.getContext('2d');
-            const cursorGlow = document.getElementById('cursor-glow');
-            
-            let width, height;
-            let orbs = [];
-            
-            // Soft, modern pastel/vibrant colors for the mesh gradient
-            const colorPalette = [
-                'rgba(56, 189, 248, 0.4)', // Sky Blue
-                'rgba(167, 139, 250, 0.4)', // Violet
-                'rgba(244, 114, 182, 0.4)', // Pink
-                'rgba(253, 230, 138, 0.4)', // Warm Yellow
-                'rgba(52, 211, 153, 0.4)'   // Emerald
-            ];
-            
-            // Mouse tracking with fluid easing
-            let mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
-            
-            function resize() {
-                width = window.innerWidth;
-                height = window.innerHeight;
-                canvas.width = width;
-                canvas.height = height;
-                initOrbs();
-            }
-            
-            window.addEventListener('resize', resize);
-            window.addEventListener('mousemove', (e) => {
-                mouse.targetX = e.clientX;
-                mouse.targetY = e.clientY;
-                cursorGlow.style.opacity = 1;
-            });
-            window.addEventListener('mouseout', () => {
-                cursorGlow.style.opacity = 0;
-                mouse.targetX = -1000;
-                mouse.targetY = -1000;
-            });
-            
-            class Orb {
-                constructor(color) {
-                    this.radius = Math.random() * 300 + 300; // Large sizes for soft blending
-                    this.x = Math.random() * width;
-                    this.y = Math.random() * height;
-                    this.vx = (Math.random() - 0.5) * 0.5; // Very slow drift
-                    this.vy = (Math.random() - 0.5) * 0.5;
-                    this.color = color;
-                    this.baseX = this.x;
-                    this.baseY = this.y;
-                }
-                update() {
-                    this.baseX += this.vx;
-                    this.baseY += this.vy;
-                    
-                    // Gentle bounce off screen edges (with large buffer due to blur)
-                    if (this.baseX < -300 || this.baseX > width + 300) this.vx *= -1;
-                    if (this.baseY < -300 || this.baseY > height + 300) this.vy *= -1;
-
-                    // Mouse interaction: Orbs gently repel from the cursor
-                    let dx = mouse.x - this.baseX;
-                    let dy = mouse.y - this.baseY;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (dist < 600) {
-                        const force = (600 - dist) / 600;
-                        this.x = this.baseX - (dx * force * 0.3);
-                        this.y = this.baseY - (dy * force * 0.3);
-                    } else {
-                        // Smoothly return to base position
-                        this.x += (this.baseX - this.x) * 0.05;
-                        this.y += (this.baseY - this.y) * 0.05;
-                    }
-                }
-                draw() {
-                    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
-                    gradient.addColorStop(0, this.color);
-                    gradient.addColorStop(1, 'rgba(255,255,255,0)');
-                    
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = gradient;
-                    ctx.fill();
-                }
-            }
-            
-            function initOrbs() {
-                orbs = [];
-                // 5-6 large orbs for a smooth mesh gradient look
-                for (let i = 0; i < 6; i++) {
-                    orbs.push(new Orb(colorPalette[i % colorPalette.length]));
-                }
-            }
-            
-            function animate() {
-                // Clear background with extremely light tint
-                ctx.clearRect(0, 0, width, height);
-                ctx.fillStyle = '#f8fafc'; // Matches --bg-base
-                ctx.fillRect(0, 0, width, height);
-                
-                // Fluid cursor easing
-                mouse.x += (mouse.targetX - mouse.x) * 0.08;
-                mouse.y += (mouse.targetY - mouse.y) * 0.08;
-                
-                cursorGlow.style.transform = `translate(${mouse.x}px, ${mouse.y}px)`;
-                
-                // Draw Orbs
-                orbs.forEach(orb => {
-                    orb.update();
-                    orb.draw();
-                });
-                
-                requestAnimationFrame(animate);
-            }
-            
-            resize();
-            animate();
-        }
-
-        // Initialize scroll reveal animations
-        function initScrollAnimations() {
-            const reveals = document.querySelectorAll('.reveal');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('active');
-                    }
-                });
-            }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
-
-            reveals.forEach(r => observer.observe(r));
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           CHART CONFIGURATION (LIGHT THEME ADAPTATION)
-        ═══════════════════════════════════════════════════════════ */
-        const C = { 
-            text: '#475569', // Slate 600
-            border: 'rgba(0, 0, 0, 0.06)',
-            gold: '#d97706', blue: '#4f46e5', green: '#059669', 
-            red: '#dc2626', purple: '#7c3aed', cyan: '#0891b2', orange: '#ea580c' 
-        };
-        
-        const MULTI = [ 
-            '#4f46e5', '#0891b2', '#7c3aed', '#ea580c', '#059669', '#dc2626', 
-            '#2563eb', '#d97706', '#db2777', '#65a30d' 
+        const MULTI = [
+            C.blue, C.green, C.purple, C.cyan, C.orange, C.red,
+            '#52be80', '#3498db', '#8e44ad', '#1abc9c', '#e67e22', '#c0392b',
+            '#27ae60', '#2980b9', '#d35400', '#16a085'
         ];
-        
+
         Chart.defaults.color = C.text;
         Chart.defaults.borderColor = C.border;
-        Chart.defaults.font.family = "'Inter', sans-serif";
-        Chart.defaults.font.size = 11;
+        Chart.defaults.font.family = "'Nunito', sans-serif";
 
-        // Data Helpers
+
+        /* ═══════════════════════════════════════════════════════════
+           PRICE PARSER
+        ═══════════════════════════════════════════════════════════ */
         function cleanPrice(raw) {
             if (raw === null || raw === undefined) return null;
             const s = String(raw).trim();
             if (!s || s === 'nan' || s === 'None' || s === 'N/A') return null;
-            const minP = CONFIG.MIN_VALID_PRICE || 50000;
-            const maxP = CONFIG.MAX_VALID_PRICE || 15000000;
+
+            const minP = (CONFIG.MIN_VALID_PRICE) || 50000;
+            const maxP = (CONFIG.MAX_VALID_PRICE) || 15000000;
+
             const parts = s.split(/\s*[_\u2013\u2014]\s*/);
             const nums = [];
+
             for (const p of parts) {
                 const digits = p.replace(/[^\d]/g, '');
                 if (!digits || digits.length < 4) continue;
                 const n = parseInt(digits, 10);
                 if (n >= minP && n <= maxP) nums.push(n);
             }
+
             if (!nums.length) return null;
             return nums.reduce((a, b) => a + b, 0) / nums.length;
         }
 
+        /* ═══════════════════════════════════════════════════════════
+           GENERIC NUMBER PARSER
+        ═══════════════════════════════════════════════════════════ */
         function cleanNum(raw) {
             if (raw === null || raw === undefined) return null;
             const digits = String(raw).replace(/[^\d.]/g, '').trim();
@@ -733,6 +1130,9 @@
             return isNaN(n) ? null : n;
         }
 
+        /* ═══════════════════════════════════════════════════════════
+           STATUS NORMALISER
+        ═══════════════════════════════════════════════════════════ */
         function normStatus(s) {
             s = String(s || '').trim().toLowerCase();
             if (['available', 'avalibale', 'avalable', 'for sale'].includes(s)) return 'Available';
@@ -744,11 +1144,28 @@
             return 'Other';
         }
 
+        /* ═══════════════════════════════════════════════════════════
+           YEAR PARSER
+        ═══════════════════════════════════════════════════════════ */
         function parseYear(v) {
             const m = String(v || '').match(/20\d\d|19\d\d/);
             return m ? parseInt(m[0]) : null;
         }
 
+        /* ═══════════════════════════════════════════════════════════
+           REGION CLASSIFIER
+        ═══════════════════════════════════════════════════════════ */
+        function getRegion(loc) {
+            const l = (loc || '').toLowerCase();
+            const urban = CONFIG.URBAN_AREAS || [];
+            const labels = CONFIG.REGION_LABELS || ['Urban', 'Suburban', 'Rural'];
+            if (urban.some(a => l.includes(a.toLowerCase()))) return labels[0];
+            return labels[2];
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           FORMAT PRICE FOR DISPLAY
+        ═══════════════════════════════════════════════════════════ */
         function fmtPrice(v) {
             if (!v || v <= 0) return 'N/A';
             if (v >= 1000000) return 'Rs.\u00a0' + (v / 1000000).toFixed(1) + 'M';
@@ -756,6 +1173,9 @@
             return 'Rs.\u00a0' + Math.round(v).toLocaleString();
         }
 
+        /* ═══════════════════════════════════════════════════════════
+           FORMAT DATE
+        ═══════════════════════════════════════════════════════════ */
         function fmtDate(d) {
             if (!d) return '—';
             try {
@@ -765,11 +1185,20 @@
             } catch (e) { return d; }
         }
 
-        // CSV Parsers
+        /* ═══════════════════════════════════════════════════════════
+           CSV PARSER — Main data Google Sheets
+           Column layout (0-indexed):
+           [0] Company Start Year  [1] Total Complete  [2] Employment
+           [3] Branch Network      [4] Customers       [5] Company Name
+           [6] Project Name        [7] District        [8] DSD
+           [9] Location            [10] Price          [11] Status
+           [12] Total Blocks       [13] Available      [14] Extent
+        ═══════════════════════════════════════════════════════════ */
         function parseCSV(csvText) {
             const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
             const rows = result.data;
             if (rows.length < 2) return [];
+
             const data = [];
             for (let i = 1; i < rows.length; i++) {
                 const r = rows[i];
@@ -777,82 +1206,131 @@
                 if (!co || co === 'nan') continue;
                 const loc = (r[9] || '').trim();
                 if (!loc || loc === 'nan') continue;
+
                 data.push({
-                    co: co, yr: parseYear(r[0]), pn: (r[6] || '').trim() || null,
-                    district: (r[7] || '').trim() || null, dsd: (r[8] || '').trim() || null,
-                    loc: loc, px: cleanPrice(r[10]), st: normStatus(r[11]),
-                    tb: cleanNum(r[12]), av: cleanNum(r[13]), ep: cleanNum(r[14]),
+                    co: co,
+                    yr: parseYear(r[0]),
+                    pn: (r[6] || '').trim() || null,
+                    district: (r[7] || '').trim() || null,
+                    dsd: (r[8] || '').trim() || null,
+                    loc: loc,
+                    px: cleanPrice(r[10]),
+                    st: normStatus(r[11]),
+                    tb: cleanNum(r[12]),
+                    av: cleanNum(r[13]),
+                    ep: cleanNum(r[14]),
                 });
             }
             return data;
         }
 
+        /* ═══════════════════════════════════════════════════════════
+           CSV PARSER — Facebook Ads Google Sheets
+           Columns: Company, Location, Price, Published Date
+        ═══════════════════════════════════════════════════════════ */
         function parseFBCSV(csvText) {
             const result = Papa.parse(csvText, { header: true, skipEmptyLines: true });
             const records = [];
             let lastCo = '';
+
             for (const r of result.data) {
                 const co = (r['Company'] || r['company'] || '').trim();
                 if (co) lastCo = co;
                 const loc = (r['Location'] || r['location'] || '').trim();
                 if (!loc) continue;
+
                 records.push({
-                    co: lastCo, loc: loc, px: cleanPrice(r['Price'] || r['price']),
+                    co: lastCo,
+                    loc: loc,
+                    px: cleanPrice(r['Price'] || r['price']),
                     date: (r['Published Date'] || r['published_date'] || '').trim()
                 });
             }
             return records.filter(r => r.loc && r.loc !== 'nan');
         }
 
-        // Chart Helpers
+        /* ═══════════════════════════════════════════════════════════
+           CHART REGISTRY
+        ═══════════════════════════════════════════════════════════ */
         const charts = {};
+
         function mkChart(id, cfg) {
             if (charts[id]) charts[id].destroy();
             charts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
         }
         const trunc = (s, n) => (!s || s.length <= n) ? (s || '') : s.substring(0, n) + '…';
-        const myColor = (name, i) => (CONFIG.YOUR_COMPANY && name === CONFIG.YOUR_COMPANY) ? C.blue : MULTI[i % MULTI.length];
+        const myColor = (name, i) =>
+            (CONFIG.YOUR_COMPANY && name === CONFIG.YOUR_COMPANY) ? C.gold : MULTI[i % MULTI.length];
 
+
+        /* ═══════════════════════════════════════════════════════════
+           RENDER FACEBOOK TABLES (only Active Lands table now)
+        ═══════════════════════════════════════════════════════════ */
         function renderFBTables(fbData) {
+            // Update KPI 4
             const fbWithPrice = fbData.filter(r => r.px !== null);
             document.getElementById('kpi4').textContent = fbData.length;
             document.getElementById('kpi4s').textContent = fbWithPrice.length + ' with price data';
+
+            // TABLE A — Active Lands (all, sorted by date desc)
             const sorted = [...fbData].sort((a, b) => {
                 const da = a.date ? new Date(a.date) : new Date(0);
                 const db = b.date ? new Date(b.date) : new Date(0);
                 return db - da;
             });
+
             document.getElementById('fbLandsBody').innerHTML = sorted.map(r => `
             <tr>
-              <td><strong style="color:var(--text-primary)">${r.co || '—'}</strong></td>
+              <td><strong>${r.co || '—'}</strong></td>
               <td>${r.loc}</td>
-              <td style="font-weight:600; color:var(--text-primary)">${r.px ? fmtPrice(r.px) : '<span style="color:var(--text-muted)">—</span>'}</td>
-              <td style="font-size:0.85em;color:var(--text-muted)">${fmtDate(r.date)}</td>
+              <td>${r.px ? fmtPrice(r.px) : '<span style="color:var(--text-secondary)">—</span>'}</td>
+              <td style="font-size:0.82em;color:var(--text-secondary)">${fmtDate(r.date)}</td>
             </tr>`).join('');
         }
 
-        function renderDashboard(data) {
-            document.getElementById('hTitle').textContent = CONFIG.DASHBOARD_TITLE;
-            document.getElementById('hSub').textContent = CONFIG.DASHBOARD_SUBTITLE;
-            document.getElementById('hDate').textContent = CONFIG.DATA_DATE;
 
+        /* ═══════════════════════════════════════════════════════════
+           MAIN RENDER  (main data)
+        ═══════════════════════════════════════════════════════════ */
+        function renderDashboard(data) {
+            const CFG = CONFIG || {};
+
+            // Apply header
+            document.getElementById('hTitle').textContent = CFG.DASHBOARD_TITLE || 'Land Market Dashboard';
+            document.getElementById('hSub').textContent = CFG.DASHBOARD_SUBTITLE || '';
+            document.getElementById('hDate').textContent = CFG.DATA_DATE || '📅 2026';
+
+            // ── Aggregate companies ──
             const companies = {};
             data.forEach(r => {
-                if (!companies[r.co]) companies[r.co] = { name: r.co, yr: r.yr, projects: 0 };
+                if (!companies[r.co]) companies[r.co] = { name: r.co, yr: r.yr, projects: 0,
+                    blocks: 0, statuses: {} };
                 const c = companies[r.co];
                 c.projects++;
+                if (r.tb) c.blocks += r.tb;
+                c.statuses[r.st] = (c.statuses[r.st] || 0) + 1;
                 if (!c.yr && r.yr) c.yr = r.yr;
             });
             const coList = Object.values(companies).sort((a, b) => b.projects - a.projects);
 
+            // ── KPIs ──
+            const totalPr = data.length;
+            const locs = new Set(data.map(r => r.loc));
+
             document.getElementById('hCompanies').textContent = coList.length;
-            document.getElementById('hProjects').textContent = data.length.toLocaleString();
+            document.getElementById('hProjects').textContent = totalPr.toLocaleString();
+
             document.getElementById('kpi1').textContent = coList.length;
             document.getElementById('kpi1s').textContent = 'Active Market Players';
-            document.getElementById('kpi2').textContent = data.length.toLocaleString();
+            document.getElementById('kpi2').textContent = totalPr.toLocaleString();
             document.getElementById('kpi2s').textContent = 'All Project Statuses';
+            // kpi4 filled by renderFBTables
 
-            // Chart 1: Bubble
+
+            /* ─────────────────────────────────────────────────────────
+               CHART 1 — BUBBLE: Company Market Presence
+               Bubble size = total number of projects (not blocks)
+            ───────────────────────────────────────────────────────── */
             const top10 = coList.slice(0, 10);
             const maxProjects = Math.max(...top10.map(c => c.projects), 1);
             mkChart('bubbleChart', {
@@ -860,180 +1338,679 @@
                 data: {
                     datasets: top10.map((c, i) => ({
                         label: c.name,
-                        data: [{ x: c.yr ? CONFIG.CURRENT_YEAR - c.yr : 5, y: c.projects, r: Math.max(8, Math.round((c.projects / maxProjects) * 45)) }],
-                        backgroundColor: myColor(c.name, i) + 'aa', // slightly transparent
-                        borderColor: myColor(c.name, i), 
-                        borderWidth: (CONFIG.YOUR_COMPANY && c.name === CONFIG.YOUR_COMPANY) ? 3 : 1,
+                        data: [{
+                            x: c.yr ? (CFG.CURRENT_YEAR || 2026) - c.yr : 5,
+                            y: c.projects,
+                            r: Math.max(8, Math.round((c.projects / maxProjects) *
+                                45))
+                        }],
+                        backgroundColor: myColor(c.name, i) + 'bb',
+                        borderColor: myColor(c.name, i),
+                        borderWidth: (CFG.YOUR_COMPANY && c.name === CFG
+                            .YOUR_COMPANY) ? 3 : 1.5,
                     }))
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15, font: { size: 11, family: 'Inter' } } } },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 10,
+                                font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const c = top10[ctx.datasetIndex];
+                                    return [`${c.name}`,
+                                        `Years in Market: ${c.yr ? (CFG.CURRENT_YEAR||2026)-c.yr : '?'}`,
+                                        `Total Projects: ${c.projects}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        x: { title: { display: true, text: 'Years in Business', color: C.text, font: {weight: 600} }, grid: { color: C.border } },
-                        y: { title: { display: true, text: 'Number of Projects', color: C.text, font: {weight: 600} }, grid: { color: C.border } }
+                        x: { title: { display: true, text: 'Years in Business', color: C.gold },
+                            grid: { color: C.border } },
+                        y: { title: { display: true, text: 'Number of Projects', color: C.gold },
+                            grid: { color: C.border } }
                     }
                 }
             });
 
-            // Chart 2: Timeline
+
+            /* ─────────────────────────────────────────────────────────
+               CHART 2 — TIMELINE: Years Each Company Has Operated
+            ───────────────────────────────────────────────────────── */
             const coWithYr = coList.filter(c => c.yr).sort((a, b) => a.yr - b.yr).slice(0, 16);
             mkChart('ageChart', {
                 type: 'bar',
                 data: {
                     labels: coWithYr.map(c => trunc(c.name, 14)),
                     datasets: [{
-                        label: 'Years', data: coWithYr.map(c => CONFIG.CURRENT_YEAR - c.yr),
-                        backgroundColor: coWithYr.map((c, i) => myColor(c.name, i) + '99'), 
-                        borderColor: coWithYr.map((c, i) => myColor(c.name, i)), 
-                        borderWidth: 1, borderRadius: 6
+                        label: 'Years',
+                        data: coWithYr.map(c => (CFG.CURRENT_YEAR || 2026) - c.yr),
+                        backgroundColor: coWithYr.map((c, i) => myColor(c.name, i) + '88'),
+                        borderColor: coWithYr.map((c, i) => myColor(c.name, i)),
+                        borderWidth: 1,
+                        borderRadius: 4
                     }]
                 },
                 options: {
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { 
-                        x: { title: { display: true, text: 'Years', color: C.text, font:{weight: 600} }, grid: { color: C.border } }, 
-                        y: { grid: { display: false }, ticks: { font: { size: 10, family: 'Inter', weight: 500 } } } 
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false },
+                        tooltip: { callbacks: { label: ctx =>
+                                `${ctx.raw} years (founded ${coWithYr[ctx.dataIndex].yr})` } } },
+                    scales: {
+                        x: { title: { display: true, text: 'Years', color: C.gold },
+                        grid: { color: C.border } },
+                        y: { grid: { display: false }, ticks: { font: { size: 9 } } }
                     }
                 }
             });
 
-            // Chart 4: Top Locations
+
+            /* ─────────────────────────────────────────────────────────
+               CHART 4 — BAR: Top Locations by Project Count
+            ───────────────────────────────────────────────────────── */
             const locCount = {};
             data.forEach(r => { locCount[r.loc] = (locCount[r.loc] || 0) + 1; });
-            const topLocs = Object.entries(locCount).sort((a, b) => b[1] - a[1]).slice(0, CONFIG.TOP_LOCATIONS_COUNT);
+            const topLocs = Object.entries(locCount).sort((a, b) => b[1] - a[1])
+                .slice(0, CFG.TOP_LOCATIONS_COUNT || 20);
             mkChart('locationBar', {
                 type: 'bar',
                 data: {
                     labels: topLocs.map(([l]) => l),
-                    datasets: [{ label: 'Projects', data: topLocs.map(([_, n]) => n), backgroundColor: C.purple + '99', borderColor: C.purple, borderWidth: 1, borderRadius: 6 }]
+                    datasets: [{
+                        label: 'Projects',
+                        data: topLocs.map(([, n]) => n),
+                        backgroundColor: C.purple + '88',
+                        borderColor: C.purple,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
                 },
                 options: {
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { x: { title: { display: true, text: 'Projects', color: C.text, font:{weight: 600} }, grid: { color: C.border } }, y: { grid: { display: false }, ticks: { font: { size: 10, weight: 500 } } } }
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Projects', color: C.gold },
+                        grid: { color: C.border } },
+                        y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                    }
                 }
             });
 
-            // Chart 5: Price Bar
+
+            /* ─────────────────────────────────────────────────────────
+               CHART 5 — BAR: Avg Price / Perch by Location
+            ───────────────────────────────────────────────────────── */
             const locPrices = {};
-            data.forEach(r => { if (r.px !== null && r.px > 0) { if (!locPrices[r.loc]) locPrices[r.loc] = []; locPrices[r.loc].push(r.px); } });
-            const locAvg = Object.entries(locPrices).filter(([_, a]) => a.length >= 2).map(([l, a]) => [l, Math.round(a.reduce((x, y) => x + y, 0) / a.length)]).sort((a, b) => b[1] - a[1]).slice(0, CONFIG.TOP_PRICE_LOCATIONS_COUNT);
+            data.forEach(r => {
+                if (r.px !== null && r.px > 0) {
+                    if (!locPrices[r.loc]) locPrices[r.loc] = [];
+                    locPrices[r.loc].push(r.px);
+                }
+            });
+            const locAvg = Object.entries(locPrices)
+                .filter(([, a]) => a.length >= 2)
+                .map(([l, a]) => [l, Math.round(a.reduce((x, y) => x + y, 0) / a.length)])
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, CFG.TOP_PRICE_LOCATIONS_COUNT || 20);
             mkChart('locationPriceBar', {
                 type: 'bar',
                 data: {
                     labels: locAvg.map(([l]) => l),
-                    datasets: [{ label: 'Avg Price', data: locAvg.map(([_, p]) => p), backgroundColor: C.orange + '99', borderColor: C.orange, borderWidth: 1, borderRadius: 6 }]
+                    datasets: [{
+                        label: 'Avg Price',
+                        data: locAvg.map(([, p]) => p),
+                        backgroundColor: C.orange + '88',
+                        borderColor: C.orange,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
                 },
                 options: {
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${fmtPrice(ctx.raw)} per perch` } } },
-                    scales: { x: { title: { display: true, text: 'LKR per Perch', color: C.text, font:{weight:600} }, grid: { color: C.border }, ticks: { callback: v => fmtPrice(v) } }, y: { grid: { display: false }, ticks: { font: { size: 10, weight: 500 } } } }
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => `${fmtPrice(ctx.raw)} per perch` } }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'LKR per Perch', color: C.gold },
+                            grid: { color: C.border },
+                            ticks: { callback: v => fmtPrice(v) } },
+                        y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                    }
                 }
             });
 
-            // Chart 6: Plot Size
-            const buckets = CONFIG.PLOT_BUCKETS.map(b => ({ ...b, count: 0 }));
+
+            /* ─────────────────────────────────────────────────────────
+               CHART 6 — BAR: Plot Size Distribution (no price line)
+            ───────────────────────────────────────────────────────── */
+            const rawBuckets = (CFG.PLOT_BUCKETS && CFG.PLOT_BUCKETS.length) ?
+                CFG.PLOT_BUCKETS :
+                [
+                    { label: '6–8', max: 8 },
+                    { label: '9–11', max: 11 },
+                    { label: '12–15', max: 15 },
+                    { label: '16–20', max: 20 },
+                    { label: '20+', max: 9999 },
+                ];
+
+            const buckets = rawBuckets.map(b => ({ ...b, count: 0, avail: [] }));
             data.forEach(r => {
                 if (!r.ep || r.ep <= 0) return;
                 const bucket = buckets.find(b => r.ep <= b.max);
-                if (bucket) bucket.count++;
+                if (!bucket) return;
+                bucket.count++;
+                if (r.av !== null && r.av > 0) bucket.avail.push(r.av);
             });
+
+            const bucketAvgAvail = buckets.map(b =>
+                b.avail.length ? Math.round(b.avail.reduce((a, c) => a + c, 0) / b.avail.length) : 0);
+
             mkChart('plotSizeBar', {
                 type: 'bar',
                 data: {
                     labels: buckets.map(b => b.label + '\nperches'),
-                    datasets: [{ label: 'Number of Projects', data: buckets.map(b => b.count), backgroundColor: C.cyan + '99', borderColor: C.cyan, borderWidth: 1, borderRadius: 8 }]
+                    datasets: [
+                        {
+                            label: 'Number of Projects',
+                            data: buckets.map(b => b.count),
+                            backgroundColor: C.cyan + '88',
+                            borderColor: C.cyan,
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                    ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false }, ticks: { font: { size: 11, weight: 600 } } }, y: { title: { display: true, text: 'Number of Projects', color: C.text, font:{weight: 600} }, grid: { color: C.border }, beginAtZero: true } }
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, color: C.text,
+                                font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => [
+                                    `Projects: ${ctx.raw}`,
+                                    `Avg available plots: ${bucketAvgAvail[ctx.dataIndex]}`,
+                                ]
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: C.border }, ticks: { font: { size: 10 } } },
+                        y: { title: { display: true, text: 'Number of Projects', color: C.cyan },
+                            grid: { color: C.border }, beginAtZero: true },
+                    }
                 }
             });
 
+            // Plot insight
             const bucketsWithData = buckets.filter(b => b.count >= 3);
             if (bucketsWithData.length > 0) {
                 const most = bucketsWithData.reduce((a, b) => a.count >= b.count ? a : b);
-                document.getElementById('plotInsight').textContent = `${most.label} perch plots are the most widely offered (${most.count} projects). This size bracket has the highest market competition and buyer familiarity.`;
+                document.getElementById('plotInsight').textContent =
+                    `${most.label} perch plots are the most widely offered (${most.count} projects). ` +
+                    `This size bracket has the highest market competition and buyer familiarity. ` +
+                    `Consider differentiation in under-served size bands for strategic positioning.`;
             }
+          }
 
-            // Insights
-            const top3co = coList.slice(0, 3).map(c => `${c.name} (${c.projects})`).join(', ');
-            const autoText = `Top volume competitors: ${top3co}. Monitor their pricing and new location launches closely.`;
-            document.getElementById('insightGrid').innerHTML = CONFIG.INSIGHTS.map(item => `
+
+            /* ─────────────────────────────────────────────────────────
+               EXECUTIVE SUMMARY INSIGHT BOXES
+            ───────────────────────────────────────────────────────── */
+            const top3co = coList.slice(0, 3)
+                .map(c => `${c.name} (${c.projects} projects)`).join(', ');
+            const autoText =
+                `Top competitors: ${top3co}. Monitor their pricing and new location launches closely.`;
+
+            const fallbackInsights = [
+                { icon: '🔴', title: 'Market Saturation Zones',
+                    text: 'Homagama, Athurugiriya, and Piliyandala show the highest project density.' },
+                { icon: '🟡', title: 'Growth Opportunities',
+                    text: 'Kurunegala, Tangalle, and Matara show less competition with growing demand.' },
+                { icon: '🟢', title: 'Pricing Strategy',
+                text: 'Rs. 200,000–500,000/perch shows the highest absorption rate.' },
+                { icon: '📊', title: 'Project Scale Sweet Spot',
+                text: '20–60 block projects show fastest sell-through.' },
+                { icon: '🏗️', title: 'Plot Size Preference',
+                    text: '9–11 perch plots dominate. 6–8 trending in urban areas.' },
+                { icon: '⚡', title: 'Top Competitive Threats', text: '{AUTO}' },
+            ];
+
+            const insightItems = (CFG.INSIGHTS && CFG.INSIGHTS.length) ?
+                CFG.INSIGHTS : fallbackInsights;
+
+            document.getElementById('insightGrid').innerHTML = insightItems.map(item => `
             <div class="insight">
               <h4>${item.icon || ''} ${item.title || ''}</h4>
               <p>${(item.text || '') === '{AUTO}' ? autoText : (item.text || '')}</p>
             </div>`).join('');
 
+            /* ─────────────────────────────────────────────────────────
+               DISTRICT INTELLIGENCE
+            ───────────────────────────────────────────────────────── */
             renderDistrictIntelligence(data, coList);
-            
-            // Hide Loader and Trigger Animations
-            document.getElementById('loader').style.display = 'none';
-            setTimeout(() => { initScrollAnimations(); }, 100);
-        }
 
+            // Hide loader
+            document.getElementById('loader').style.display = 'none';
+        }
+      },
+      scales: {
+        x: { stacked:true, title:{ display:true, text:'Number of Projects', color:C.gold }, grid:{ color:C.border } },
+        y: { stacked:true, grid:{ display:false }, ticks:{ font:{ size:10 }, color:C.text } }
+      }
+    }
+  });
+
+  /* ── 5. DSD Dominance Table ── */
+  const dsdRows = [];
+  Object.entries(dsdCoMap).forEach(([key, coData]) => {
+    const [dist, dsd] = key.split('||');
+    const sorted = Object.entries(coData).sort((a,b) => b[1]-a[1]);
+    dsdRows.push({
+      dist, dsd,
+      top1: sorted[0] || ['—', 0],
+      top2: sorted[1] || ['—', 0],
+      total: sorted.reduce((s,[,n])=>s+n,0)
+    });
+  });
+  // Sort by district alphabetically then by total desc
+  dsdRows.sort((a,b) => a.dist.localeCompare(b.dist) || b.total - a.total);
+
+  document.getElementById('dsdDominanceBody').innerHTML = dsdRows.map((row, i) => {
+    const showDist = (i === 0 || dsdRows[i-1].dist !== row.dist);
+    const dominantPct = row.total > 0 ? Math.round((row.top1[1]/row.total)*100) : 0;
+    const badgeClass  = dominantPct >= 70 ? 'b-featured' : dominantPct >= 50 ? 'b-available' : 'b-ongoing';
+    return `<tr>
+      <td style="color:var(--gold);font-weight:700;white-space:nowrap">${showDist ? row.dist : ''}</td>
+      <td style="font-size:0.82em">${row.dsd}</td>
+      <td><strong>${trunc(row.top1[0],16)}</strong>
+        <span class="badge ${badgeClass}" style="margin-left:4px;font-size:0.68em">${dominantPct}%</span>
+      </td>
+      <td style="text-align:center;color:var(--green);font-weight:700">${row.top1[1]}</td>
+      <td style="font-size:0.82em;color:var(--text-secondary)">${trunc(row.top2[0],14)}</td>
+      <td style="text-align:center;color:var(--text-secondary)">${row.top2[1] || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  /* ── 6. Company Territory Table ── */
+  const coTerritoryRows = coList.map(c => {
+    const districts = coDistMap[c.name] ? [...coDistMap[c.name]].sort() : [];
+    return { name:c.name, projects:c.projects, districts };
+  }).filter(r => r.districts.length > 0)
+    .sort((a,b) => b.districts.length - a.districts.length || b.projects - a.projects);
+
+  document.getElementById('companyTerritoryBody').innerHTML = coTerritoryRows.map((r, i) => {
+    const distBadges = r.districts.map(d =>
+      `<span class="badge b-ongoing" style="margin:1px 2px;font-size:0.68em">${d}</span>`
+    ).join('');
+    return `<tr>
+      <td><strong style="color:var(--gold)">${trunc(r.name,18)}</strong></td>
+      <td style="text-align:center">
+        <span style="font-family:'Rajdhani',sans-serif;font-size:1.3em;font-weight:700;color:${MULTI[i%MULTI.length]}">${r.districts.length}</span>
+      </td>
+      <td style="line-height:1.8">${distBadges}</td>
+      <td style="text-align:center;color:var(--cyan);font-weight:700">${r.projects}</td>
+    </tr>`;
+  }).join('');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   FACEBOOK DATA LOADER
+═══════════════════════════════════════════════════════════ */
+async function loadFBData() {
+  const fbUrl = (CONFIG.FACEBOOK_SHEET_CSV_URL || '').trim();
+  if (fbUrl.length > 10) {
+    try {
+      const resp = await fetch(fbUrl);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const csv  = await resp.text();
+      const data = parseFBCSV(csv);
+      if (data.length > 0) {
+        renderFBTables(data);
+        return;
+      }
+    } catch(e) {
+      console.warn('FB Sheets failed:', e.message);
+    }
+  }
+  // Fallback to fb_data.json
+  try {
+    const resp = await fetch('fb_data.json');
+    const data = await resp.json();
+    renderFBTables(data);
+  } catch(e) {
+    document.getElementById('kpi4').textContent  = '—';
+    document.getElementById('kpi4s').textContent = 'Set FACEBOOK_SHEET_CSV_URL in config.js';
+    document.getElementById('fbLandsBody').innerHTML =
+      '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:20px">No Facebook data — add fb_data.json or set FACEBOOK_SHEET_CSV_URL in config.js</td></tr>';
+    document.getElementById('fbOppsBody').innerHTML =
+      '<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);padding:20px">No Facebook data available</td></tr>';
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN DATA LOADER
+   1. Try Google Sheets URL from config.js
+   2. Fall back to data.json
+═══════════════════════════════════════════════════════════ */
+async function loadAndRender() {
+  const src = document.getElementById('dataSource');
+  const url = CONFIG.GOOGLE_SHEET_CSV_URL || '';
+
+  if (url.length > 10) {
+    try {
+      src.textContent = '⏳ Fetching from Google Sheets...';
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const csv  = await resp.text();
+      const data = parseCSV(csv);
+      if (data.length < 5) throw new Error('Too few rows');
+      renderDashboard(data);
+      const priceCount = data.filter(r=>r.px!==null).length;
+      src.textContent =
+        `✅ Live · Google Sheets · Updated: ${new Date().toLocaleTimeString()} · ${data.length} projects · ${priceCount} with prices`;
+    } catch (e) {
+      console.warn('Google Sheets failed:', e.message);
+      src.textContent = `⚠️ Google Sheets error (${e.message}) — falling back to data.json`;
+      await loadJSON(src);
+    }
+  } else {
+    await loadJSON(src);
+  }
+
+  // Load Facebook data separately (always runs)
+  await loadFBData();
+}
+
+async function loadJSON(src) {
+  try {
+    const resp = await fetch('data.json');
+    const data = await resp.json();
+    renderDashboard(data);
+    const priceCount = data.filter(r=>r.px!==null).length;
+    src.textContent =
+      `📁 Offline data (data.json) · ${data.length} projects · ${priceCount} with prices · Set GOOGLE_SHEET_CSV_URL in config.js to go live`;
+  } catch(e) {
+    src.textContent = '❌ Cannot load data.json — make sure all files are uploaded to GitHub';
+    document.getElementById('loader').style.display = 'none';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+loadAndRender();
+
+const mins = CONFIG.AUTO_REFRESH_MINUTES || 0;
+if (mins > 0) setInterval(loadAndRender, mins * 60000);
+
+</script>
+
+
+        /* ═══════════════════════════════════════════════════════════
+           DISTRICT INTELLIGENCE RENDERER
+           - District Dominance stacked bar (all districts)
+           - DSD-wise dominant company table
+           - Company territory map table
+        ═══════════════════════════════════════════════════════════ */
         function renderDistrictIntelligence(data, coList) {
-            const distCoMap = {}; const coDistMap = {};
+
+            /* ── 1. Build district → { company → count } ── */
+            const distCoMap = {}; // { district: { company: count } }
+            const dsdCoMap = {}; // { 'District||DSD': { company: count } }
+            const coDistMap = {}; // { company: Set<district> }
+
             data.forEach(r => {
                 const dist = r.district || 'Unknown';
+                const dsd = r.dsd || 'Unknown';
                 const co = r.co;
-                if (!distCoMap[dist]) distCoMap[dist] = {}; distCoMap[dist][co] = (distCoMap[dist][co] || 0) + 1;
-                if (!coDistMap[co]) coDistMap[co] = new Set(); coDistMap[co].add(dist);
+
+                // district → company map
+                if (!distCoMap[dist]) distCoMap[dist] = {};
+                distCoMap[dist][co] = (distCoMap[dist][co] || 0) + 1;
+
+                // DSD → company map
+                const dsdKey = dist + '||' + dsd;
+                if (!dsdCoMap[dsdKey]) dsdCoMap[dsdKey] = {};
+                dsdCoMap[dsdKey][co] = (dsdCoMap[dsdKey][co] || 0) + 1;
+
+                // company → districts set
+                if (!coDistMap[co]) coDistMap[co] = new Set();
+                coDistMap[co].add(dist);
             });
 
-            const distList = Object.keys(distCoMap).sort((a, b) => Object.values(distCoMap[b]).reduce((s, n) => s + n, 0) - Object.values(distCoMap[a]).reduce((s, n) => s + n, 0));
+            /* ── 2. Sort districts by total project count ── */
+            const distList = Object.keys(distCoMap).sort((a, b) => {
+                const ta = Object.values(distCoMap[a]).reduce((s, n) => s + n, 0);
+                const tb = Object.values(distCoMap[b]).reduce((s, n) => s + n, 0);
+                return tb - ta;
+            });
+
+            /* ── 3. Pick top companies for stacking (top 10 by project count) ── */
             const topCoNames = coList.slice(0, 10).map(c => c.name);
-            const stackDatasets = topCoNames.map((coName, i) => ({ label: trunc(coName, 18), data: distList.map(d => distCoMap[d][coName] || 0), backgroundColor: myColor(coName, i) + 'dd', borderColor: myColor(coName, i), borderWidth: 1, borderRadius: 4 }));
-            
-            const othersData = distList.map(d => { const total = Object.values(distCoMap[d]).reduce((s, n) => s + n, 0); const top10sum = topCoNames.reduce((s, cn) => s + (distCoMap[d][cn] || 0), 0); return total - top10sum; });
-            if (othersData.some(v => v > 0)) stackDatasets.push({ label: 'Others', data: othersData, backgroundColor: 'rgba(100,116,139,0.5)', borderColor: 'rgba(100,116,139,0.8)', borderWidth: 1, borderRadius: 4 });
+
+            /* ── 4. District Dominance stacked bar ── */
+            const stackDatasets = topCoNames.map((coName, i) => ({
+                label: trunc(coName, 18),
+                data: distList.map(d => distCoMap[d][coName] || 0),
+                backgroundColor: myColor(coName, i) + '99',
+                borderColor: myColor(coName, i),
+                borderWidth: 1,
+                borderRadius: 2,
+            }));
+
+            // Add "Others" dataset
+            const othersData = distList.map(d => {
+                const total = Object.values(distCoMap[d]).reduce((s, n) => s + n, 0);
+                const top10sum = topCoNames.reduce((s, cn) => s + (distCoMap[d][cn] || 0), 0);
+                return total - top10sum;
+            });
+            if (othersData.some(v => v > 0)) {
+                stackDatasets.push({
+                    label: 'Others',
+                    data: othersData,
+                    backgroundColor: 'rgba(160,160,176,0.4)',
+                    borderColor: 'rgba(160,160,176,0.7)',
+                    borderWidth: 1,
+                    borderRadius: 2,
+                });
+            }
 
             mkChart('districtDominanceChart', {
-                type: 'bar', data: { labels: distList, datasets: stackDatasets },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true, font: { size: 11, family: 'Inter' }, padding: 10 } } }, scales: { x: { stacked: true, title: { display: true, text: 'Number of Projects', color: C.text, font:{weight: 600} }, grid: { color: C.border } }, y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10, weight: 500 } } } }
+                type: 'bar',
+                data: { labels: distList, datasets: stackDatasets },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { usePointStyle: true, font: { size: 9 },
+                                color: C.text, padding: 8 } },
+                        tooltip: {
+                            callbacks: {
+                                title: ctx => ctx[0].label + ' District',
+                                afterBody: ctx => {
+                                    const dist = ctx[0].label;
+                                    const total = Object.values(distCoMap[dist]).reduce((s, n) => s +
+                                        n, 0);
+                                    const leader = Object.entries(distCoMap[dist]).sort((a, b) => b[
+                                        1] - a[1])[0];
+                                    return [`Total: ${total} projects`,
+                                        `Leader: ${leader[0]} (${leader[1]})`];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, title: { display: true, text: 'Number of Projects',
+                                color: C.gold }, grid: { color: C.border } },
+                        y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 },
+                                color: C.text } }
+                    }
+                }
             });
 
-            // Territory Table (Spans full width now)
-            const coTerritoryRows = coList.map(c => ({ name: c.name, projects: c.projects, districts: coDistMap[c.name] ? [...coDistMap[c.name]].sort() : [] })).filter(r => r.districts.length > 0).sort((a, b) => b.districts.length - a.districts.length || b.projects - a.projects);
-            document.getElementById('companyTerritoryBody').innerHTML = coTerritoryRows.map((r, i) => `
-                <tr>
-                    <td><strong style="color:var(--text-primary); font-size: 1.05em;">${trunc(r.name,24)}</strong></td>
-                    <td style="text-align:center"><span style="font-size:1.3em;font-weight:800;color:${MULTI[i%MULTI.length]}">${r.districts.length}</span></td>
-                    <td style="line-height:2.2">${r.districts.map(d => `<span class="badge b-ongoing" style="margin:2px 4px;font-size:0.75em">${d}</span>`).join('')}</td>
-                    <td style="text-align:center;color:var(--accent-main);font-weight:700; font-size:1.1em;">${r.projects}</td>
-                </tr>`).join('');
+            /* ── 5. DSD Dominance Table ── */
+            const dsdRows = [];
+            Object.entries(dsdCoMap).forEach(([key, coData]) => {
+                const [dist, dsd] = key.split('||');
+                const sorted = Object.entries(coData).sort((a, b) => b[1] - a[1]);
+                dsdRows.push({
+                    dist,
+                    dsd,
+                    top1: sorted[0] || ['—', 0],
+                    top2: sorted[1] || ['—', 0],
+                    total: sorted.reduce((s, [, n]) => s + n, 0)
+                });
+            });
+            // Sort by district alphabetically then by total desc
+            dsdRows.sort((a, b) => a.dist.localeCompare(b.dist) || b.total - a.total);
+
+            document.getElementById('dsdDominanceBody').innerHTML = dsdRows.map((row, i) => {
+                const showDist = (i === 0 || dsdRows[i - 1].dist !== row.dist);
+                const dominantPct = row.total > 0 ? Math.round((row.top1[1] / row.total) * 100) : 0;
+                const badgeClass = dominantPct >= 70 ? 'b-featured' : dominantPct >= 50 ?
+                    'b-available' : 'b-ongoing';
+                return `<tr>
+              <td style="color:var(--gold);font-weight:700;white-space:nowrap">${showDist ? row.dist : ''}</td>
+              <td style="font-size:0.82em">${row.dsd}</td>
+              <td><strong>${trunc(row.top1[0],16)}</strong>
+                <span class="badge ${badgeClass}" style="margin-left:4px;font-size:0.68em">${dominantPct}%</span>
+              </td>
+              <td style="text-align:center;color:var(--green);font-weight:700">${row.top1[1]}</td>
+              <td style="font-size:0.82em;color:var(--text-secondary)">${trunc(row.top2[0],14)}</td>
+              <td style="text-align:center;color:var(--text-secondary)">${row.top2[1] || '—'}</td>
+            </tr>`;
+            }).join('');
+
+            /* ── 6. Company Territory Table ── */
+            const coTerritoryRows = coList.map(c => {
+                    const districts = coDistMap[c.name] ? [...coDistMap[c.name]].sort() : [];
+                    return { name: c.name, projects: c.projects, districts };
+                }).filter(r => r.districts.length > 0)
+                .sort((a, b) => b.districts.length - a.districts.length || b.projects - a.projects);
+
+            document.getElementById('companyTerritoryBody').innerHTML = coTerritoryRows.map((r, i) => {
+                const distBadges = r.districts.map(d =>
+                    `<span class="badge b-ongoing" style="margin:1px 2px;font-size:0.68em">${d}</span>`
+                ).join('');
+                return `<tr>
+              <td><strong style="color:var(--gold)">${trunc(r.name,18)}</strong></td>
+              <td style="text-align:center">
+                <span style="font-family:'Rajdhani',sans-serif;font-size:1.3em;font-weight:700;color:${MULTI[i%MULTI.length]}">${r.districts.length}</span>
+              </td>
+              <td style="line-height:1.8">${distBadges}</td>
+              <td style="text-align:center;color:var(--cyan);font-weight:700">${r.projects}</td>
+            </tr>`;
+            }).join('');
         }
 
+
+        /* ═══════════════════════════════════════════════════════════
+           FACEBOOK DATA LOADER
+        ═══════════════════════════════════════════════════════════ */
         async function loadFBData() {
+            const fbUrl = (CONFIG.FACEBOOK_SHEET_CSV_URL || '').trim();
+            if (fbUrl.length > 10) {
+                try {
+                    const resp = await fetch(fbUrl);
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    const csv = await resp.text();
+                    const data = parseFBCSV(csv);
+                    if (data.length > 0) {
+                        renderFBTables(data);
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('FB Sheets failed:', e.message);
+                }
+            }
+            // Fallback to fb_data.json
             try {
-                const resp = await fetch(CONFIG.FACEBOOK_SHEET_CSV_URL);
-                if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                renderFBTables(parseFBCSV(await resp.text()));
+                const resp = await fetch('fb_data.json');
+                const data = await resp.json();
+                renderFBTables(data);
             } catch (e) {
                 document.getElementById('kpi4').textContent = '—';
-                document.getElementById('fbLandsBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:30px">No Facebook data connection found. Check configuration.</td></tr>';
+                document.getElementById('kpi4s').textContent =
+                    'Set FACEBOOK_SHEET_CSV_URL in config.js';
+                document.getElementById('fbLandsBody').innerHTML =
+                    '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:20px">No Facebook data — add fb_data.json or set FACEBOOK_SHEET_CSV_URL in config.js</td></tr>';
             }
         }
 
+
+        /* ═══════════════════════════════════════════════════════════
+           MAIN DATA LOADER
+           1. Try Google Sheets URL from config.js
+           2. Fall back to data.json
+        ═══════════════════════════════════════════════════════════ */
         async function loadAndRender() {
             const src = document.getElementById('dataSource');
-            src.textContent = '⏳ Syncing Data securely...';
-            try {
-                const resp = await fetch(CONFIG.GOOGLE_SHEET_CSV_URL);
-                if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                const data = parseCSV(await resp.text());
-                renderDashboard(data);
-                src.textContent = `✅ Live System Sync · ${new Date().toLocaleTimeString()} · ${data.length} Projects Analysed`;
-            } catch (e) {
-                src.textContent = `⚠️ Connection Error. Ensure the Google Sheet URL is accessible.`;
-                document.getElementById('loader').style.display = 'none';
+            const url = CONFIG.GOOGLE_SHEET_CSV_URL || '';
+
+            if (url.length > 10) {
+                try {
+                    src.textContent = '⏳ Fetching from Google Sheets...';
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    const csv = await resp.text();
+                    const data = parseCSV(csv);
+                    if (data.length < 5) throw new Error('Too few rows');
+                    renderDashboard(data);
+                    const priceCount = data.filter(r => r.px !== null).length;
+                    src.textContent =
+                        `✅ Live · Google Sheets · Updated: ${new Date().toLocaleTimeString()} · ${data.length} projects · ${priceCount} with prices`;
+                } catch (e) {
+                    console.warn('Google Sheets failed:', e.message);
+                    src.textContent =
+                        `⚠️ Google Sheets error (${e.message}) — falling back to data.json`;
+                    await loadJSON(src);
+                }
+            } else {
+                await loadJSON(src);
             }
+
+            // Load Facebook data separately (always runs)
             await loadFBData();
         }
 
-        window.onload = () => {
-            initInteractiveBackground(); // Start Aurora canvas
-            loadAndRender(); // Start Data Load
-        };
+        async function loadJSON(src) {
+            try {
+                const resp = await fetch('data.json');
+                const data = await resp.json();
+                renderDashboard(data);
+                const priceCount = data.filter(r => r.px !== null).length;
+                src.textContent =
+                    `📁 Offline data (data.json) · ${data.length} projects · ${priceCount} with prices · Set GOOGLE_SHEET_CSV_URL in config.js to go live`;
+            } catch (e) {
+                src.textContent =
+                    '❌ Cannot load data.json — make sure all files are uploaded to GitHub';
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           INIT
+        ═══════════════════════════════════════════════════════════ */
+        loadAndRender();
+
+        const mins = CONFIG.AUTO_REFRESH_MINUTES || 0;
+        if (mins > 0) setInterval(loadAndRender, mins * 60000);
     </script>
 </body>
 </html>
