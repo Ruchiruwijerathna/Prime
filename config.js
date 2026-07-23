@@ -81,7 +81,7 @@ const CONFIG = {
 
   DASHBOARD_TITLE:    "Land Market — Competitor Analysis",
   DASHBOARD_SUBTITLE: "Real Estate Land Data Dashboard · 2026",
-  DATA_DATE:          "Updated: 2026 May 15",
+  DATA_DATE:          "Updated: 2026 ",
 
 
   /* ════════════════════════════════════════════════════════
